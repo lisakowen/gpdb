@@ -73,7 +73,7 @@
                     </tbody>
                 </tgroup>
             </table>
-            <p>Refer to the PostgreSQL <xref href="https://www.postgresql.org/docs/8.4/static/xfunc-volatility.html" scope="external" format="html">Function Volatility Categories</xref> documentation for additional information about the Greenplum Database function volatility classifications.</p>
+            <p>Refer to the PostgreSQL <xref href="https://www.postgresql.org/docs/8.3/static/xfunc-volatility.html" scope="external" format="html">Function Volatility Categories</xref> documentation for additional information about the Greenplum Database function volatility classifications.</p>
             <p>In Greenplum Database, data is divided up across segments — each segment is a
                 distinct PostgreSQL database. To prevent inconsistent or unexpected results, do not
                 execute functions classified as <codeph>VOLATILE</codeph> at the segment level if
