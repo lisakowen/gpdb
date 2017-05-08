@@ -18,6 +18,9 @@
       <li id="pw222281">
         <xref href="#topic10" type="topic" format="dita"/>
       </li>
+      <li id="pw21367213">
+        <xref href="#topic1113" type="topic" format="dita"/>
+      </li>
       <li id="pw213672">
         <xref href="#topic11" type="topic" format="dita"/>
       </li>
@@ -517,6 +520,65 @@ $$ language plpythonu;</codeblock>
         </ul>
       </body>
     </topic>
+  </topic>
+  <topic id="topic1113" xml:lang="en">
+    <title id="pw2137121113">Arrays and Composite Types</title>
+    <body>
+      <p>You pass SQL array values into PL/Python functions with a Python list. Similarly, PL/Python functions return SQL array values as a Python list. In the typical PL/Python usage pattern, you will specify an array with <codeph>[]</codeph>.</p>
+
+<p>The following example creates a PL/Python function that returns an array of integers:</p>
+<codeblock>CREATE FUNCTION return_py_int_array()
+  RETURNS int[]
+AS $$
+  return [1, 11, 21, 31]
+$$ LANGUAGE plpythonu;
+
+SELECT return_py_int_array();
+ return_py_int_array 
+---------------------
+ {1,11,21,31}
+(1 row) </codeblock>
+
+<p>PL/Python treats multi-dimensional arrays as lists of lists. You pass a multi-dimensional array to a PL/Python function using nested Python lists. When a PL/Python function returns a multi-dimensional array, the inner lists at each level must all be of the same size. </p>
+
+<p>The following example creates a PL/Python function that takes as input, displays the type of, and returns a multi-dimensional array of integers:</p>
+<codeblock>CREATE FUNCTION return_multidim_py_array(x int4[]) 
+  RETURNS int4[]
+AS $$
+  plpy.info(x, type(x))
+  return x
+$$ LANGUAGE plpythonu;
+
+SELECT * FROM return_multidim_py_array(ARRAY[[1,2,3], [4,5,6]]);
+INFO:  ([[1, 2, 3], [4, 5, 6]], &lt;type 'list'&gt;)
+CONTEXT:  PL/Python function "return_multidim_py_type"
+ return_multidim_py_array 
+--------------------------
+ {{1,2,3},{4,5,6}}
+(1 row) </codeblock>
+
+<p>PL/Python also accepts other Python sequences, such as tuples, as function arguments for backwards compatibility with Greenplum versions where multi-dimensional arrays were not supported. In such cases, these Python sequences are always treated as one-dimensional arrays because they are ambiguous with composite types.</p>
+<p>You must specify a composite type as a tuple, rather than a list, when it is used in a multi-dimensional array. You cannot return an array of composite types as a list because it would be ambiguous to determine whether the list represents a composite type or another array dimension. In the typical usage pattern, you will specify composite type tuples with <codeph>()</codeph>.</p>
+
+<p>In the following example, you create a composite type and a PL/Python function that returns an array of the composite type:</p>
+<codeblock>CREATE TYPE type_record AS (
+  first text,
+  second int4
+);
+
+CREATE FUNCTION composite_type_as_list()
+  RETURNS type_record[]
+AS $$              
+  return [[('first', 1), ('second', 1)], [('first', 2), ('second', 2)], [('first', 3), ('second', 3)]];
+$$ LANGUAGE plpythonu;
+
+SELECT * FROM composite_type_as_list();
+                               composite_type_as_list                           
+------------------------------------------------------------------------------------
+ {{"(first,1)","(second,1)"},{"(first,2)","(second,2)"},{"(first,3)","(second,3)"}}
+(1 row) </codeblock>
+    <p>Refer to the PostgreSQL <xref href="https://www.postgresql.org/docs/8.3/static/plpython-funcs.html" scope="external" format="html">PL/Python Functions</xref> documentation for additional information on PL/Python handling of composite types.</p>
+    </body>
   </topic>
   <topic id="topic11" xml:lang="en">
     <title id="pw213712">Examples</title>
