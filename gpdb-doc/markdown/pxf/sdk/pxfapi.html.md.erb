@@ -1,0 +1,240 @@
+---
+title: Introducing the PXF API
+---
+
+You use the PXF API to add support for a new external data store, data format, or data access API to Greenplum Database. You can also use the PXF API to extend existing external data stores, formats, and APIs. The PXF API defines the data structures, classes, and interfaces that you need to map external data into a tabular form suitable for Greenplum Database, and vice-versa.
+
+The PXF API interfaces that you implement or extend will depend upon the external data store/API, data types, and operations (read, write) that your connector or plug-in will support, as well as what features you want to provide. 
+
+The PXF API defines classes including the following:
+
+| Class Name       | Description                                |
+|------------------|--------------------------------------------|
+| `Plugin`       | The base class for for all PXF plug-in types.    |
+| `Fragmenter`       | The abstract class that defines the splitting of a data from an external source into fragments.    |
+| `Fragment`       | A subset of data that can be read in parallel.    |
+| `OneRow`       | One record or row in a `Fragment`.  |
+| `OneField`       | One deserialized or serialized field in a `OneRow` record.    |
+| `InputData`       | Input data from Greenplum Database and common configuration information available to all plug-ins, and the helper methods to access this information.    |
+
+
+The PXF API exposes the following interfaces:
+
+| Interface Name  | Description                                |
+|------------------|--------------------------------------------|
+| `ReadAccessor` |  Reads a `Fragment` and generates a list of `OneRow` records.  |
+| `WriteAccessor` |  Writes `OneRow` records to the external data source. |
+| `ReadResolver` |  Deserializes a single `OneRow` record into a list of `OneField` objects.  |
+| `ReadVectorizedResolver` |  Deserializes a batch of `OneRow` records into tuples of `OneField` objects.  |
+| `WriteResolver` |  Serializes a list of `OneField` objects into a single `OneRow` record. |
+
+
+This topic introduces the PXF API data type classes and interfaces mentioned above. 
+
+## <a id="api_info"></a>General PXF API Information
+### <a id="pkg_name"></a>Package Name
+
+The PXF API base package name is `org.apache.hawq.pxf.api`. All PXF API classes and interfaces reside in this package.
+
+### <a id="jar_file"></a>JAR File
+
+You need the PXF API JAR file to develop with the PXF SDK. This file is named `pxf-api-<version>.jar`, where `<version>` is a dot-separated 4 digit version number. For example: 
+
+``` shell
+pxf-api-3.3.0.0.jar
+```
+
+You can obtain the PXF API JAR file from your Greenplum Database installation here:
+
+``` shell
+$GPHOME/pxf/lib/pxf-api-<version>.jar
+```
+
+If any plug-in that you implement will extend a class from a built-in PXF connector (HDFS, Hive, HBase), you will also need the JAR file associated with that connector. The built-in PXF connector JAR files also reside in `$GPHOME/pxf/lib`:
+
+``` shell
+pxf-hbase-<version>.jar
+pxf-hdfs-<version>.jar
+pxf-hive-<version>.jar
+pxf-json-<version>.jar
+```
+
+You can also choose to build PXF JAR file(s) from source.
+
+## <a id="datastruct_classes"></a>PXF API Classes
+
+### <a id="class_plugin"></a>Plugin
+
+The `org.apache.hawq.pxf.api.utilities.Plugin` class is the base class for all plug-in. `Plugin` manages the metadata for a specific user request. 
+
+`Plugin` methods include:
+
+| Method Signature      |   Description    |
+|----------------|----------------------|
+| public Plugin(InputData input) | Constructor.  |
+| boolean isThreadSafe() | Return the thread-safeness of the plug-in; determined by `InputData`.  |
+
+??INTRODUCE InputData BEFORE THIS??
+
+
+### <a id="fragmenter"></a>Fragmenter
+
+The `org.apache.hawq.pxf.api.Fragmenter` abstract class defines the splitting of data from an external source into `Fragment`s.
+
+The `Fragmenter` also generates data source-specific metadata and user data for each data `Fragment`.
+
+`Fragmenter` methods include:
+
+| Method Signature      |   Description    |
+|----------------|----------------------|
+| public abstract List<Fragment> getFragments() | Return the fragments associated with a given file/table/etc. from an external data source.  |
+| public FragmentsStats getFragmentsStats() | Return fragment statistics. (Not implemented) |
+
+
+### <a id="fragment"></a>Fragment
+
+The `org.apache.hawq.pxf.api.Fragment` class represents a subset of data read from the external data source by the `Fragmenter`. Each data `Fragment` describes some part of the requested data set and includes information including the the data source name - i.e. the file or table name, etc., and the name(s) of the host(s) where the data is located.
+
+`Fragment` metadata identifies specific information about the fragment, such as the start index and length of the fragment or a region location.
+
+A `Fragment` may also include data source-specific user data. ??WHAT SORT OF INFO WOULD BE FOUND HERE??
+
+Instance variables defined by the `Fragment` class include:
+
+| Data Type               | Variable Name |  Description                                                                                                                                                                                                                                                         |
+|-------------------------|---------------------|----------------------|
+| String    | sourceName | Absolute path, table name, etc. identifying the external data source. |
+| int    | index | The index of this `Fragment` in the list of `Fragment`s returned by the `Fragmenter`. |
+| String[]    | replicas | One or more host locations from which the `Accessor` can read this `Fragment`. |
+| byte[]    | metadata | Metadata associated with the `Fragment`, such as start location and length, region name; PXF passes this data to the `Accessor`. |
+| byte[]    | userData | Implementation-specific data associated with the `Fragment`; PXF passes this data to the `Accessor`. |
+| String    | profile | The name of the recommended read profile for the `Fragment`.  ??when would this be used?? |
+
+The `Fragment` class also includes getter and setting methods for these attributes.
+
+### <a id="class_onerow"></a>OneRow
+
+The `org.apache.hawq.pxf.api.OneRow` class represents one record or row in a  `Fragment`.
+
+A class that implements the `ReadAccessor` interface reads a `Fragment` from the external data source and generates `OneRow` records.
+
+A class that implements the `WriteAccessor` interface writes `OneRow` records to the external data source.
+
+Instance variables defined by the `OneRow` class include:
+
+| Data Type           | Variable Name |  Description  |  
+|---------------------|----------------|----------------------|
+| Object    | key | The key of the data record. (Optional) |
+| Object   | data | The data associated with one record/row of a `Fragment`. |
+
+In certain data formats such as SequenceFile, the data for a record may be accompanied by a key. PXF reserves the Greenplum Database column name `recordkey` for such data.
+
+The `OneRow` class also includes getter and setter methods for these instance variables.
+
+### <a id="class_onefield"></a>OneField
+
+The `org.apache.hawq.pxf.api.OneField` class represents one deserialized or serialized field in a `OneRow` object.
+
+A class that implements the `ReadResolver` interface deserializes a `OneRow` record into a list of `OneField` objects. A class that implements the `ReadVectorizedResolver` interface deserializes a batch of `OneRow` records.
+
+A class that implements the `WriteResolver` interface serializes a list of `OneField` objects into a `OneRow` record.
+
+`OneField` instance variables include:
+
+| Data Type      | Variable Name |  Description    |
+|----------------|---------------------|--------------|
+| int    | type | The `DataType` OID identifying the type of field data. |
+| Object   | val | The field data. 
+
+The `OneField` class also includes getter and setter methods for these instance variables.
+
+### <a id="class_columndescriptor"></a>ColumnDescriptor
+
+The `org.apache.hawq.pxf.api.utilities.ColumnDescriptor` class represents one column in a Greenplum Database table. This class includes information about the data type of the column, as well as the column index in the table. 
+
+`ColumnDescriptor` instance variables include:
+
+| Data Type      | Variable Name |  Description    |
+|----------------|---------------|-----------------|
+| int    | dbColumnTypeCode | XXX |
+| String    | dbColumnName | The name of the column. |
+| String    | dbColumnTypeName | The name of the column's data type. |
+| int    | dbColumnIndex | XXX |
+| Integer[]    | dbColumnTypeModifiers | XXX |
+| boolean    | isProjected | XXX (Not implemented) |
+
+### <a id="class_inputdata"></a>InputData
+
+The `org.apache.hawq.pxf.api.utilities.InputData` class represents configuration information available to all plug-ins. This class includes data and options the user provides in the `CREATE EXTERNAL TABLE` command, as well as fragment metadata determined by the `Fragmenter`. 
+
+`InputData` instance variables include:
+
+| Data Type      | Variable Name |  Source   | Description    |
+|----------------|---------------------|-------------|--------|
+| Map<String, String>    | requestParametersMap | XX  | XXX |
+| ArrayList<ColumnDescriptor>  | tupleDescription | XX  | The external table column types, names, and other information. |
+|  int  | segmentId | PXF C library | XXX |
+|  int  | totalSegments | PXF C library | The total number of Greenplum Database segments in the cluster. |
+|  byte[]  | fragmentMetadata | Fragmenter | XXX |
+|  byte[]  | userData | XX | XXX |
+|  boolean  | filterStringValid | XX | XXX (Not implemented) |
+|  String  | filterString | XX | XXX (Not implemented) |
+|  String  | dataSource | XX | XXX |
+|  String  | profile | XX | XXX |
+|  String  | accessor | XX | The *Accessor* plug-in class name. |
+|  String  | resolver | XX | The *Resolver* plug-in class name. |
+|  String  | fragmenter | XX | The *Fragmenter* plug-in class name. |
+|  String  | metadata | XX | XXX |
+|  boolean  | threadSafe | XX | XXX |
+|  ColumnDescriptor  | recordkeyColumn | XX | XXX |
+|  int  | numAttrsProjected | XX | XXX (Not implemented) |
+
+The `InputData` class includes getter and setter methods. It also includes helper functions. These functions are described later in this guide.
+
+## <a id="interface"></a>PXF API Interfaces
+
+### <a id="if_readacc"></a>ReadAccessor
+
+The `org.apache.hawq.pxf.api.ReadAccessor` interface defines read access to the external data source. A class that implements this interface reads a `Fragment` and generates individual `OneRow` records.
+
+`ReadAccessor` interface methods include:
+
+| Method Signature      |   Description    |
+|----------------|----------------------|
+| boolean openForRead() | Open the external data source for reading.  |
+| OneRow readNextObject() | Read from the external data source and return a `OneRow` object. |
+| boolean closeForRead() | Close the external data source for reading. |
+
+### <a id="if_writeacc"></a>WriteAccessor
+
+The `org.apache.hawq.pxf.api.WriteAccessor` interface defines the write interface to the external data source. A class that implements this interface writes a record directly to the external data source.
+
+`WriteAccessor` interface methods include:
+
+| Method Signature      |   Description    |
+|----------------|----------------------|
+| boolean openForWrite() | Open the external data source for writing.  |
+| boolean writeNextObject(OneRow onerow) | Write the next record to the external data source. |
+| boolean closeForWrite() | Close the external data source for writing.  |
+
+### <a id="if_readres"></a>ReadResolver
+
+The `org.apache.hawq.pxf.api.ReadResolver` interface defines the deserialization of  data read from an external data source to Greenplum Database. A class that implements this interface generates a list of `OneField` objects from a `OneRow` object.
+
+`ReadResolver` interface methods include:
+
+| Method Signature      |   Description    |
+|----------------|----------------------|
+| List\<OneField\> getFields(OneRow row) | Return the list of `OneField` objects in the `OneRow` object.  |
+
+
+### <a id="if_writeres"></a>WriteResolver
+
+The `org.apache.hawq.pxf.api.WriteResolver` interface defines the serialization of data from Greenplum Database to an external data source. A class that implements this interface serializes `OneField` objects into a `OneRow` object.
+
+`WriteResolver` interface methods include:
+
+| Method Signature      |   Description    |
+|----------------|----------------------|
+| OneRow setFields(List\<OneField\> record) | Construct a `OneRow` record object from a list of `OneField` objects. |
+

@@ -1,0 +1,57 @@
+---
+title: Defining External Table Parameters
+---
+
+The end user accesses an external data source by invoking the Greenplum Database `CREATE EXTERNAL TABLE` command specifying the `pxf` protocol. 
+
+The `LOCATION` clause of the `CREATE EXTERNAL TABLE` command specifying the `pxf` protocol is a URI that specifies the external data source and location or path to or name of the data. Greenplum Database passes the parameters in the `LOCATION` URI as headers to the PXF Java service.
+
+The query portion of the URI, introduced by a question mark (?), must include the PXF profile name or the plug-in class names. You can have the user pass additional information to your plug-in by defining and adding custom options to the `LOCATION` string.
+
+The end user specifies mapping and formatting options for your connector using the `FORMAT` clause of the `CREATE EXTERNAL TABLE` command. PXF supports both text and binary format data.
+
+The [Creating an External Table using PXF](../using_pxf.html#creatinganexternaltable) section in the PXF end-user documentation details how to create an external table specifying a profile name. The syntax for a `CREATE EXTERNAL TABLE` command that specifies the Java plug-in class names is as follows:
+
+``` sql
+CREATE [WRITABLE] EXTERNAL TABLE <table_name>
+        ( <column_name> <data_type> [, ...] | LIKE <other_table> )
+LOCATION('pxf://<path-to-data>?[FRAGMENTER=<fragmenter_class>
+        &]ACCESSOR=<accessor_class>
+        &RESOLVER=<resolver_class>
+        [&<custom-option>=<value>[...]]')
+FORMAT '[TEXT|CSV|CUSTOM]' (<formatting-properties>);
+```
+
+Instead of providing a profile name, the end user specifies the fully-qualified names of the `FRAGMENTER` (read), `ACCESSOR`, and `RESOLVER` plug-in classes. Creating an external table in this manner may prove useful for testing purposes - you need not register the profile definition and perform the associated `pxf-profiles.xml` file updates and propogation across the Greenplum Database cluster.
+
+Developer-centric keywords in the `CREATE [WRITABLE] EXTERNAL TABLE` command include:
+
+| Keyword          | Value and Description                      |
+|------------------|--------------------------------------------|
+| FRAGMENTER       | The Java class that PXF invokes to split the data. Specify for READABLE external tables only.    |
+| ACCESSOR         | The Java class that PXF invokes to access (read and/or write) the data. Specify for READABLE and WRITABLE external tables.  |
+| RESOLVER         | The Java class PXF that invokes to deserialize and /orserialize the data. Specify for READABLE and WRITABLE external tables.      |
+| \<custom-option\>=\<value\> | Connector-defined information that is available to the plug-ins at runtime. |
+|  FORMAT | Identifies whether the data is text or binary format. PXF connectors can support the `'TEXT'`, `'CSV'`, and `'CUSTOM'` (binary) `FORMAT`s.   |
+| (\<formatting-properties\>)| Connector-defined formatting properties. |
+
+## <a id="custom_options"></a>Custom Options
+
+Your connector may require additional information from the user to access an external data source. This information could include a user name, a delimiter, a key, and can be anything that your connector needs to access and parse data from the external data source. You obtain this information from the user via custom options that you define and that the user provides in the `CREATE EXTERNAL TABLE` `LOCATION` URI.
+
+Custom options are specified in \<option_key\>=\<value\> format. The user prefixes each custom option in the `LOCATION` URI with an ampersand (&).
+
+The custom options specified by the user are available to all plug-ins. The PXF helper class `org.apache.hawq.pxf.api.utilities.InputData` maintains a mapping of \<option_key\> and \<value\> strings, and includes a utility method to obtain the value for a specific \<option-key\>:
+
+``` java
+public String getUserProperty(String userProp)
+```
+
+## <a id="formatting_options"></a>Formatting Properties
+
+The formatting properties govern how data is encoded between Greenplum Database and PXF. PXF supports text and binary data formats.  The *Resolver* uses the formatting properties specified in the `CREATE EXTERNAL TABLE` command to deserialize data from the external data source for Greenplum Database or to serialize data from Greenplum Database to the external data source.
+
+PXF includes built-in formatters for text and binary data. Your connector can choose to support any formatting property identified on the `CREATE EXTERNAL TABLE` reference page for `'TEXT'` and `'CSV'` (text) format data.
+
+The Greenplum Database end user specifies `FORMAT 'CUSTOM'` when they want to read or write binary data from/to an external data source. `FORMAT 'CUSTOM'` requires a `formatter` property specification: `(formatter='pxfwritable_import')` for a read operation, or `(formatter='pxfwritable_export')` for a write operation.
+

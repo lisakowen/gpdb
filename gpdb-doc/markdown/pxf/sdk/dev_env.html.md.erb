@@ -1,0 +1,172 @@
+---
+title: Developing with the PXF SDK
+---
+This section introduces considerations for developing with the PXF SDK. Many of these subjects will be further discussed in later topics in this guide.
+
+This also section introduces the PXF development environment. Setting up your PXF development environment includes:
+
+- Installing a supported version of Java.
+- Identifying and installing your IDE or build tool of choice.
+- Obtaining the required PXF JAR file(s).
+
+
+## <a id="prequisites"></a>Prerequisites
+
+Before beginning development with the PXF SDK, ensure that you have:
+
+- Met the [Prerequisites](dev_overview.html#prereqs) identified in the <i>Using the PXF Java SDK</i> section.
+- Administrative access to your development system.
+- Administrative access to your Greenplum Database cluster and can identify the hostname of the Greenplum Database master host.
+- Secure shell access to the Greenplum Database master host to copy files.
+
+
+## <a id="identify_scope"></a>Identifying the Scope of the Connector
+
+Some questions to answer and considerations to take into account before you start developing your PXF connector or plug-in are listed below.
+
+**Ownership**
+
+- Are you planning to contribute your connector or plug-in to the PXF open source project or keep it proprietary?
+
+**Location of the External Data**
+
+- Identify the the location of the external data.
+- What information must the user provide to access the data?
+- Does a connector to the external data source already exist?
+
+    If a connector already exists, you may be able to re-use or extend the `Fragmenter` plug-in for the data source. If a connector to the external data source does not exist, you must create a new `Fragmenter` for the data source.
+
+**Operations Supported**
+
+- Will the connector or plug-in support the read operation?
+- Will the connector or plug-in support the write operation?
+
+**Data Format**
+
+- Identify the storage format of the data.
+- What information from the user do you need to read data from the external data store?
+- Is there a `ReadAccessor` already implemented that provides access to the data format?
+
+    If an `ReadAccessor` already exists for the data format, you may be able to re-use or extend that `ReadAccessor`. If a `ReadAccessor` for the data format does not exist, you must create a new `ReadAccessor` to read the data.
+
+- Is there a `ReadResolver` already implemented that provides access to the data format?
+
+    If an `ReadResolver` already exists for the data format, you may be able to re-use or extend that `ReadResolver`. If an `ReadResolver` for the data format does not exist, you must create a new `ReadResolver` to deserialize the data.
+     
+- What information from the user do you need to write the data?
+- Is there a `WriteResolver` already implemented that serializes the data format?
+
+    If a `WriteResolver` already exists for the data format, you may be able to re-use or extend that `WriteResolver`.  If a `WriteResolver` for the data format does not exist, you must create a new `WriteResolver` to serialize the data.
+
+- Is there a `WriteAccessor` already implemented that writes the  data format?
+
+    If a `WriteAccessor` already exists for the data format, you may be able to re-use or extend that `WriteAccessor`. If a `WriteAccessor` for the data format does not exist, you must create a new `WriteAccessor` to write the data format.
+     
+
+## <a id="identify_name"></a>Naming the Connector Package and Plug-in Classes
+
+Together, the package name and plug-in class names that you choose for your connector should include terms that identify the external data source, data format, and/or data access API. Additionally:
+
+- The name you choose for the `Fragmenter` plug-in class should include the term *Fragmenter*.
+- The name(s) you choose for the `ReadAccessor` and/or `WriteAccessor` plug-in class should include the term *Accessor*.
+- The name(s) you choose for the `ReadResolver` and/or `WriteResolver` plug-in class should include the term *Resolver*.
+
+
+## <a id="identify_depends"></a>Identifying Connector Dependencies
+
+You must identify and satisfy the compile- and runtime- dependencies that your connector or plug-in has on external components. For example, the PXF HDFS connector utilizes the Hadoop Java API. This connector has compile- and runtime- dependencies on several classes in the `com.apache.hadoop` package. These dependencies are fulfilled via a number of JAR files provided in a Hadoop client installation.
+
+### <a id="depends_compile"></a>Compile-time Dependencies
+You can set up the build environment for your connector to retrieve compile-time dependencies from `maven` or other remote repositories. Your connector may also have compile-time dependencies that you fulfill via a JAR file local to your build system.
+
+All PXF connectors have a compile-time dependency on the `pxf-api-<version>.jar` file. Your connector may also have compile-time dependencies on other PXF jar files if you extend any of the PXF classes implemented in those JAR files.
+
+PXF JAR files are not currently available from a remote repository. You must copy the JAR file(s) from your Greenplum Database installation to your development system before you build your connector.
+
+PXF JAR files are available from the following directory in your Greenplum Database installation:
+
+``` shell
+$GPHOME/pxf/lib
+```
+
+### <a id="depends_run"></a>Run-time Dependencies
+
+The PXF agent determines certain runtime dependencies from configuration files found in the `$GPHOME/pxf/conf` directory. 
+
+The `pxf-private.classpath` configuration file identifies the runtime dependencies for the PXF agent itself. This file also identifies the runtime dependencies for the PXF HDFS, Hive, and HBase built-in connectors.
+
+You specify the runtime dependencies of a connector that you develop, including the JAR file for your connector, in the `pxf-public.classpath` configuration file. You specify a dependency in the `pxf-public.classpath` file by providing the absolute path to the JAR file. Specify each dependency on a separate line in the file. 
+
+**Note**: The `pxf-public.classpath` file on a Greenplum Database segment host is shared amongst all third-party connectors running in the cluster.
+
+You must also identify any dependencies that your connector has on third-party commands or other components on the system. These commands and components must be installed on all Greenplum Database segment hosts. Any programs on which your connector depends must be executable by the `gpadmin` operating system user.
+
+## <a id="setup"></a>Setting up the Development Environment
+
+You can develop with the PXF SDK on you operating system of choice and with the IDE or build environment of your choice.
+
+You must install the Java Development Kit on your development system to develop with the PXF SDK. You must also obtain the PXF API JAR file, and the JAR file(s) for any PXF built-in connectors whose classes you will extend.
+
+Perform the following procedure to set up your PXF development environment. This procedure assumes a Linux-based development system.
+
+1. Create a work directory. For example:
+
+    ``` shell
+    user@devsystem$ mkdir pxf_dev
+    user@devsystem$ cd pxf_dev
+    user@devsystem$ export PXFDEV_BASE=`pwd`
+    ```
+    
+    This documentation references this work directory in later exercises. You may consider adding `$PXFDEV_BASE` to your `.bash_profile` or equivalent shell initialization script.
+    
+2. If not already present on your development system, install Java Development Kit version 1.7 or 1.8. You must have superuser permissions to install operating system packages. For example, to install the JDK on a CentOS development system:
+
+    ``` shell
+    root@devsystem$ sudo yum install java-1.8.0-openjdk-1.8.0*
+    ```
+
+3. Obtain the PXF API JAR file `pxf-api-<version>.jar` and copy to your work directory. You can copy this file from your Greenplum Database installation, or from a PXF build from source. For example:
+
+    ``` shell
+    user@devsystem$ cd $PXFDEV_BASE
+    user@devsystem$ scp gpuser@gpmaster:/usr/local/greenplum-db/pxf/lib/pxf-api-<version>.jar .
+    ```
+    
+4. Copy any other PXF JAR files that you require. For example:
+
+    ``` shell
+    user@devsystem$ scp gpuser@gpmaster:/usr/local/greenplum-db/pxf/lib/pxf-hdfs-<version>.jar .
+    ```
+
+## <a id="implement"></a>Implementing the Connector Plug-ins
+
+You will spend a significant amount of time implementing your plug-ins. Future topics in this guide will address the data structures, classes, and interfaces specific to *Fragmenter*, *Accessor*, and *Resolver* plug-in development. Future topics will also discuss PXF external table definitions and data type mapping, error handling, and utility classes.
+
+
+## <a id="building"></a>Building the Connector JAR File
+
+After implementing your plug-in(s), you build your code and create a JAR file(s) that will be deployed in a Greenplum Database cluster. You can choose your preferred Java IDE or build environment when you use the PXF Java SDK.
+
+
+## <a id="test"></a>Testing the Connector
+
+??HOW DO THEY TEST THEIR CONNECTOR BESIDES DEPLOYING?? NO REST API FOR THIS AT THE MOMENT??
+
+## <a id="documenting"></a>Documenting the Connector
+
+A Greenplum Database end user will use your connector to access an external data store. Provide documentation for your connector that includes, if applicable,:
+
+- A description of the external data source to which your connector supports access.
+- Profile definition(s) for your connector.
+- A list of your connector's dependencies and any download or installation information for these components.
+- The data formats or APIs that your connector supports.
+- Information describing any data type mapping between your connector and Greenplum Database.
+- A description of any connector-specific options and values.
+- A description of the formatting properties supported by your connector.
+- An example that uses your connector.
+- Any other considerations that are specific to your connector.
+
+
+## <a id="deploy"></a>Deploying the Connector
+
+Once you have completed development and testing, your connector will be deployed in a Greenplum Database cluster. As part of this deployment, you or the Greenplum Database administrator may define a profile(s) to access your connector. Profile definition and connector and profile deployment are described in the next topic.

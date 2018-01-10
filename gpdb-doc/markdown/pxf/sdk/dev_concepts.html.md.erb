@@ -1,0 +1,35 @@
+---
+title: PXF Developer Concepts
+---
+The PXF SDK provides the classes and interfaces that you use to implement support for new external data sources, data formats, and data access APIs in Greenplum Database.
+
+## <a id="architecture"></a>Plug-ins, Connectors, and Profiles
+
+The PXF API includes the *Fragmenter* class and read and write *Accessor* and *Resolver* interfaces. You implement theses classes and interfaces when you extend PXF to add support for a new external data store, data format, or data access API. The classes that you create are called *plug-ins*. A set of a single *Fragmenter*, *Accessor*, and *Resolver* plug-in class together comprise a *read connector*. An *Accessor* and *Resolver* plug-in pair comprise a *write connector*. A single *Accessor* or *Resolver* class may support both read and write operations.
+
+A *profile* is a simple name mapping to a set of connector plug-in class names.
+
+When you develop with the PXF SDK, you ultimately build a JAR file. This JAR file can contain one or more *Fragmenter*, *Accessor*, and *Resolver* plug-ins that represent read or write connectors. The Greenplum Database administrator registers your connector JAR file and its dependencies in the `pxf-public.classpath` configuration file. The administrator deploys a connector JAR file, its dependencies, and any associated configuration updates to all segment hosts in your  Greenplum Database cluster.
+
+The Greenplum Database end user accesses an external data source by invoking a `CREATE EXTERNAL TABLE` command specifying the `pxf` protocol. The end user specifies a profile name or the connector plug-in class names in the `CREATE EXTERNAL TABLE` `LOCATION` clause.
+
+
+## <a id="architecture"></a>Architecture
+
+
+PXF in Greenplum Database has two components:
+
+- A C shared library that is loaded into Greenplum Database when you `CREATE EXTENSION pxf` 
+- A Java service, referred to as the PXF agent, a single JVM process on each Greenplum Database segment host.
+
+Operations on Greenplum Database external tables created with the `pxf` protocol are first routed to the PXF C shared library extension then on to the PXF agent.
+
+The PXF C library validates the `LOCATION` URI when you invoke the `CREATE EXTERNAL TABLE` command. It is not until you `SELECT` (read) or `INSERT` into (write) the external table that Greenplum Database initiates communication with the PXF agent, which in turn invokes your connector plug-in classes.
+
+The PXF agent initiates a read operation on the external data source when the user runs a `SELECT` command on an external table created with the `pxf` protocol. The PXF agent spawns a thread that invokes the *Fragmenter*, which splits data from an external data source into a list of fragments that can be read in parallel. A read *Accessor* reads a single fragment from an external data source and produces a list of records/rows. The read *Resolver* deserializes a record/row into fields. Finally, PXF translates these fields into Greenplum Database table column values. 
+
+<img src="../graphics/pxfreadwrite.png" class="image" />
+
+The PXF agent initiates a write operation to the external data source when the user invokes an `INSERT` or similar command on an external table created with the `pxf` protocol. When writing to an external data source, PXF translates Greenplum Database table column values to fields and invokes the write *Resolver*. The write *Resolver* serializes these fields into a record. The write *Accessor* writes a record directly to the external data source.
+
+

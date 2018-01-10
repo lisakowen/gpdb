@@ -1,0 +1,46 @@
+---
+title: Introducing the Demo Connector
+---
+
+The PXF developer documentation includes a set of exercises to expand on the topics covered. These exercises operate on PXF built-in connecters, including the *Demo* connector, an example connector to the local file system.
+
+You will operate on a local copy of the connector throughout exercises in this guide.
+
+## <a id="demo_scope"></a>Scope
+
+The *Demo* connector supports read and write operations on text format files on the local file system. 
+
+The *Demo* connector read operation currently returns static data. The write operation is fully supported in the *Demo* connector.
+
+## <a id="demo_names"></a>Package and Class Names
+
+Your local copy of the *Demo* connector source code will reside in the `org.greenplum.pxf.example.demo` package.
+
+The *Demo* connector exposes the following plug-in classes:
+
+|  Class Name | Description |
+|-----------|----------------|
+| DemoFragmenter | DESCRIBE THIS |
+| DemoAccessor | DESCRIBE THIS |
+| DemoTextResolver | DESCRIBE THIS |
+| DemoFileWritableAccessor | DESCRIBE THIS |
+
+
+## <a id="demo_depends"></a>Dependencies
+
+The *Demo* Connector has compile-time dependencies on the pxf-api-\<version\>.jar file and the Apache Commons Logging JAR, `commons-logging.jar`, and a runtime dependency on the latter.
+
+You will satisfy the compile-time dependency via a local file and a maven repository.
+
+The JAR file associated with the Apache Commons logging package is already specified in `pxf-private.classpath`, fulfilling the runtime dependency.
+
+## <a id="demo_implement"></a>Implementing XXXX
+
+Upcoming exercises will guide you XXXX
+
+## <a id="demo_buildjar"></a>Building the JAR file
+
+## <a id="demo_test"></a>Testing
+
+## <a id="demo_test"></a>Deploying
+

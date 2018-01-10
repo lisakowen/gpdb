@@ -1,0 +1,132 @@
+---
+title: Defining and Deploying a PXF Profile
+---
+A PXF profile encapulates access to [a specific format of data from] a specific external data source using a simple name. PXF is installed with HDFS, Hive, and HBase connectors that expose a number of built-in profiles supporting specific data formats. The [PXF Profiles](../using_pxf.html#built-inprofiles) section in the PXF end user documentation identifies the list of built-in PXF profiles. 
+
+A PXF profile definition includes the name of the profile, a description, and the Java classes (plug-ins) that PXF will use to access and manipulate data to/from the external data source.
+
+Profile definitions for PXF built-in profiles are defined in the `$GPHOME/pxf/conf/pxf-profiles-default.xml` configuration file. Profile definitions for third-party connectors are registered in the `$GPHOME/pxf/conf/pxf-profiles.xml` file.
+
+The built-in `HdfsTextSimple` profile definition is reproduced below:
+
+``` xml
+<profile>
+    <name>HdfsTextSimple</name>
+    <description>This profile is suitable for using when reading
+        delimited single line records from plain text files on HDFS
+    </description>
+    <plugins>
+        <fragmenter>org.apache.hawq.pxf.plugins.hdfs.HdfsDataFragmenter</fragmenter>
+        <accessor>org.apache.hawq.pxf.plugins.hdfs.LineBreakAccessor</accessor>
+        <resolver>org.apache.hawq.pxf.plugins.hdfs.StringPassResolver</resolver>
+    </plugins>
+</profile>
+```
+
+The profile \<plugins\> identify the Java classes that PXF will use to split (\<fragmenter\>), read and/or write (\<accessor\>), and deserialize/serialize (\<resolver\>) the external data. The profile \<name\> provides a simple mapping to these plug-in classes. The Greenplum Database end user provides the profile name or the Java plug-in class names when he creates an external table to access the external data.
+
+
+## <a id="define_profile"></a>Defining a New Profile
+
+As a developer using the PXF SDK, you may extend the plug-in classes of PXF built-in connectors or you may implement your own plug-in classes. You may then decide to create a new profile definition(s) to expose your connector to end users.
+
+### <a id="choose_name"></a>Choosing a Profile Name
+
+When you define a new profile, choose a name that is representative of the external data source, operation(s) supported, and/or data format implemented by the plug-ins.
+
+Profile names must be unique across a Greenplum Database cluster.
+
+Examples of descriptive profile names:
+
+``` pre
+HdfsTextSimple
+LocalJSONFile
+```
+
+
+### <a id="select_classes"></a>Specifying the Plug-in Class Names
+
+A Plug-in class name that you specify in a profile definitions must be a fully-qualified class name.
+
+A set of *Fragmenter*, *Accessor*, and *Resolver* plug-in class names must be provided for a profile that supports reading from an external data store. Both an *Accessor* and a *Resolver* plug-in class name must be provided for a profile that supports writing to an external data store.
+
+You can use a profile or set of plug-ins for both reading *and* writing when the *Accessor* plug-in class implements the `ReadAccessor` and `WriteAccessor` interfaces and the *Resolver* plug-in class implements `ReadResolver` and `WriteResolver` interfaces.
+
+You can re-use a specific plug-in class name in multiple profile definitions. For example, the `HdfsTextSimple` and `HdfsTextMulti` profiles exposed by the PXF built-in HDFS connector use the same *Fragmenter* and *Resolver* plug-in classes. Refer to the `HdfsTextSimple` profile definition above.
+
+``` xml
+<profile>
+    <name>HdfsTextMulti</name>
+    <description>This profile is suitable for using when reading delimited single
+        or multi line records (with quoted linefeeds) from plain text files on HDFS.
+        It is not splittable (non parallel) and slower than HdfsTextSimple.
+    </description>
+    <plugins>
+        <fragmenter>org.apache.hawq.pxf.plugins.hdfs.HdfsDataFragmenter</fragmenter>
+        <accessor>org.apache.hawq.pxf.plugins.hdfs.QuotedLineBreakAccessor</accessor>
+        <resolver>org.apache.hawq.pxf.plugins.hdfs.StringPassResolver</resolver>
+    </plugins>
+</profile>
+```
+
+### <a id="construct_profile"></a>Constructing the Profile Definition
+
+A profile definition is a complete \<profile\> ... \<\profile\> block that identifies the name of the profile, a text description, and the fully-qualified class names of the *Fragmenter* (read), *Accessor*, and *Resolver* classes that implement the profile.
+
+``` xml
+<profile>
+    <name>profile_name</name>
+    <description>profile_description</description>
+    <plugins>
+        <fragmenter>fully.qualified.fragmenter.classname</fragmenter>
+        <accessor>fully.qualified.accessor.classname</accessor>
+        <resolver>fully.qualified.resolver.classname</resolver>
+    </plugins>
+</profile>
+```
+
+### <a id="reg_profile"></a>Registering a New Profile
+
+When you register a new profile with PXF, you add the profile definition to the `$GPHOME/pxf/conf/pxf-profiles.xml` file. Ensure that you add the profile definition between the \<profiles\> and \<\profiles\> (notice the *s*) keywords in the file.
+
+**Note**: In a typical Greenplum Database deployment, `pxf-profiles.xml` will contain multiple third-party profile definitions.
+
+
+## <a id="deploy_profile"></a>Deploying a New Profile
+
+### <a id="deploy_prereqs"></a>Prerequisites
+
+Before deploying a new profile, ensure that you have:
+
+- Administrative access to a running Greenplum Database cluster.
+- Installed the Hadoop clients and initialized and started the PXF service on each Greenplum Database segment host as described in [Installing and Configuring PXF](https://gpdb.docs.pivotal.io/latest/pxf/instcfg_pxf.html).
+- Enabled the PXF extension in a database, and optionally granted specific Greenplum Database roles access to the `pxf` protocol; [Enabling/Disabling PXF](https://gpdb.docs.pivotal.io/latest/pxf/using_pxf.html#enable-pxf-ext) and [Grant Access to PXF](https://gpdb.docs.pivotal.io/latest/pxf/using_pxf.html#access_pxf) describe these procedures.
+
+### <a id="deploy_depend"></a>Registering Run-time Dependencies
+
+You must register your connector/plug-in JAR file and the JAR files or components of any run-time dependencies with PXF. You register these dependencies with PXF by adding the absolute path of each JAR file to the PXF `$GPHOME/pxf/conf/pxf-public.classpath` configuration file. 
+
+
+### <a id="deploy_to_cluster"></a>Deploying to the Greenplum Database Cluster
+
+When you deploy a new profile or connector, you must copy the connector JAR file and the JAR files of any dependencies to each Greenplum Database host. You must also propogate any updates you made to the `pxf-public.classpath` and `pxf-profiles.xml` files to each segment host, and then you must restart the PXF service on each host. Only Greenplum Database administrative users can register PXF dependencies and restart the PXF service. 
+
+For example, if `seghostfile` contains a list, one-host-per-line, of the segment hosts in your Greenplum Database cluster:
+
+``` shell
+gpadmin@gpmaster$ gpscp my-connector.jar -v -seghostfile /my/jar/install/dir
+gpadmin@gpmaster$ gpscp connector-dependency.jar -v -seghostfile /dependency/install/dir
+gpadmin@gpmaster$ gpscp -v -f seghostfile $GPHOME/pxf/conf/pxf-public.classpath =:/usr/local/greenplum-db/pxf/conf/pxf-public.classpath
+gpadmin@gpmaster$ gpscp -v -f seghostfile $GPHOME/pxf/conf/pxf-profiles.xml =:/usr/local/greenplum-db/pxf/conf/pxf-profiles.xml
+gpadmin@gpmaster$ gpssh -e -v -f seghostfile "/usr/local/greenplum-db/pxf/bin/pxf restart"
+```
+
+You must also install any third-party commands or other components used by your connector on all Greenplum Database segment hosts. Ensure that these programs are executable by the `gpadmin` operating system user.
+
+## <a id="verify_profile_reg"></a>Verifying Profile Registration
+
+To verify deployment of a connector and registration of a new PXF profile, you create a Greenplum Database external table as described in [Creating an External Table using PXF](../using_pxf.html#creatinganexternaltable) and perform operations on the table.
+
+## <a id="example"></a>Example
+
+For an example of defining, registering, deploying, and verifying a connector and new profile, refer to [Example: Defining and Deploying Demo Connector Profiles](profiles_example.html).
