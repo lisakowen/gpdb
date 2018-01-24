@@ -1,11 +1,11 @@
 ---
-title: Defining and Deploying a PXF Profile
+title: Defining and Deploying a Connector Profile
 ---
 A PXF profile encapulates access to [a specific format of data from] a specific external data source using a simple name. PXF is installed with HDFS, Hive, and HBase connectors that expose a number of built-in profiles supporting specific data formats. The [PXF Profiles](../using_pxf.html#built-inprofiles) section in the PXF end user documentation identifies the list of built-in PXF profiles. 
 
-A PXF profile definition includes the name of the profile, a description, and the Java classes (plug-ins) that PXF will use to access and manipulate data to/from the external data source.
+A profile definition for a connector includes the name of the profile, a description, and the Java classes (plug-ins) that PXF will use to access and manipulate data to/from the external data source.
 
-Profile definitions for PXF built-in profiles are defined in the `$GPHOME/pxf/conf/pxf-profiles-default.xml` configuration file. Profile definitions for third-party connectors are registered in the `$GPHOME/pxf/conf/pxf-profiles.xml` file.
+Profile definitions for PXF built-in connectors are defined in the `$GPHOME/pxf/conf/pxf-profiles-default.xml` configuration file. Profile definitions for third-party connectors are registered in the `$GPHOME/pxf/conf/pxf-profiles.xml` file.
 
 The built-in `HdfsTextSimple` profile definition is reproduced below:
 
@@ -127,6 +127,196 @@ You must also install any third-party commands or other components used by your 
 
 To verify deployment of a connector and registration of a new PXF profile, you create a Greenplum Database external table as described in [Creating an External Table using PXF](../using_pxf.html#creatinganexternaltable) and perform operations on the table.
 
-## <a id="example"></a>Example
+## <a id="example"></a>Example: Defining and Deploying Demo Connector Profiles
 
-For an example of defining, registering, deploying, and verifying a connector and new profile, refer to [Example: Defining and Deploying Demo Connector Profiles](profiles_example.html).
+In this exercise, you will define and register both a read profile and a write profile for the Demo connector. You will also deploy the connector, its dependencies, and profiles and verify the operations.
+
+The Demo connector read operation utilizes the following plug-in classes:
+
+- *Fragmenter* class - org.greenplum.pxf.example.demo.DemoFragmenter
+- Read *Accessor* class - org.greenplum.pxf.example.demo.DemoAccessor
+- Read *Resolver* class - org.greenplum.pxf.example.demo.DemoTextResolver
+
+The Demo connector write operation utilizes the following plug-in classes:
+
+- Write *Accessor* class - org.greenplum.pxf.example.demo.DemoFileWritableAccessor
+- Write *Resolver* class - org.greenplum.pxf.example.demo.DemoTextResolver
+
+Notice that the *Demo* connector read and write operations use the same *Resolver* class.
+
+
+### <a id="prereqs"></a>Prerequisites
+
+Before attempting this exercise, ensure that you have:
+
+- Met the [Prerequisites](build_democonn_example.html#prequisites) identified in <i>Example - Building the Demo Connector JAR File</i>.
+- Met the [Prerequisites](#deploy_prereqs) identified in <i>Registering a New Profile</i>.
+
+### <a id="procedure"></a>Procedure
+
+Perform the following procedure to define and register a read profile and a write profile for your Demo connector and deploy the connector and profiles:
+
+1. Log in to the Greenplum Database master node and set up your environment:
+
+    ```
+    $ ssh gpadmin@<gpmaster>
+    gpadmin@gpmaster$ . /usr/local/greenplum-db/greenplum_path.sh
+    ```
+
+
+2. Open the `pxf-profiles.xml` file in the editor of your choosing. For example:
+
+    ``` shell
+    gpadmin@gpmaster$ vi $GPHOME/pxf/conf/pxf-profiles.xml
+    ```
+
+3. Add a definition for a Demo connector read profile named `DemoReadLocalFS`. Copy/paste the following text to the `pxf-profiles.xml` file, making sure to paste between the \<profiles\> and \</profiles\> keywords:
+
+    <pre>
+    &lt;profile&gt;
+        &lt;name&gt;DemoReadLocalFS&lt;/name&gt;
+        &lt;description&gt;This profile reads text files on the local file system.
+        &lt;/description&gt;
+        &lt;plugins&gt;
+            &lt;fragmenter&gt;org.greenplum.pxf.example.demo.DemoFragmenter&lt;/fragmenter&gt;
+            &lt;accessor&gt;org.greenplum.pxf.example.demo.DemoAccessor&lt;/accessor&gt;
+            &lt;resolver&gt;org.greenplum.pxf.example.demo.DemoTextResolver&lt;/resolver&gt;
+        &lt;/plugins&gt;
+    &lt;/profile&gt;
+    </pre>
+
+4. Add a definition for a Demo connector write profile named `DemoWriteLocalFS`. Copy/paste the following text to the `pxf-profiles.xml` file, making sure to paste between the \<profiles\> and \</profiles\> keywords:
+
+    <pre>
+    &lt;profile&gt;
+        &lt;name&gt;DemoWriteLocalFS&lt;/name&gt;
+        &lt;description&gt;This profile writes a text file on the local file system.
+        &lt;/description&gt;
+        &lt;plugins&gt;
+            &lt;accessor&gt;org.greenplum.pxf.example.demo.DemoFileWritableAccessor&lt;/accessor&gt;
+            &lt;resolver&gt;org.greenplum.pxf.example.demo.DemoTextResolver&lt;/resolver&gt;
+        &lt;/plugins&gt;
+    &lt;/profile&gt;
+    </pre>
+
+5. Save the file and exit the editor.
+
+6. Copy the *Demo* connector JAR file you previously built to the Greenplum Database master host. For example, to copy the JAR file to the `/tmp` directory, replace ``PXFDEV_BASE` with the absolute path to your PXF work area:
+
+    ``` shell
+    gpadmin@gpmaster$ scp user@devsystem:/PXFDEV_BASE/demo_example/build/libs/my-demo-connector.jar /tmp/
+    ```
+
+7. Open the `pxf-public.classpath` file in the editor of your choosing. For example:
+
+    ``` shell
+    gpadmin@gpmaster$ vi $GPHOME/pxf/conf/pxf-public.classpath
+    ```
+
+8. Satisfy the *Demo* connector JAR file run-time dependency by adding an entry to the `pxf-public.classpath` file. This entry should identify the absolute path to the JAR file on the system. For example, if `my-demo-connector.jar` will reside in the `/tmp` directory, add the following:
+
+    ``` pre
+    /tmp/my-demo-connector.jar
+    ```
+
+9. Save the file and exit the editor.
+
+10. The `commons-logging.jar` file is a run-time dependency of the *Demo* connector. This dependency can be found in a Hadoop client installation, which is required for PXF operation. Examine the `pxf-private.classpath` file to verify that this dependency is satisfied. For example:
+
+    ``` shell
+    gpadmin@gpmaster$ vi $GPHOME/pxf/conf/pxf-private.classpath
+    ```
+
+    If your Hadoop distro is HDP, look for:
+
+    ``` pre
+    /usr/hdp/current/hadoop-client/client/commons-logging.jar
+    ```
+
+10. Copy the `pxf-profiles.xml` and `pxf-public.classpath` files to all segment hosts in your Greenplum Database cluster. For example, if `seghostfile` contains a list, one-host-per-line, of the segment hosts in your Greenplum Database cluster:
+
+    ``` shell
+    gpadmin@gpmaster$ gpscp -v -f seghostfile $GPHOME/pxf/conf/pxf-profiles.xml =:/usr/local/greenplum-db/pxf/conf/pxf-profiles.xml
+    gpadmin@gpmaster$ gpscp -v -f seghostfile $GPHOME/pxf/conf/pxf-public.classpath =:/usr/local/greenplum-db/pxf/conf/pxf-public.classpath
+    ```
+11. Copy the *Demo* connector JAR file to all Greenplum Database segment hosts. Copy the JAR file to the location you specified in the `pxf-public.classpath` file. For example:
+
+    ``` shell
+    gpadmin@gpmaster$ gpscp -v -f seghostfile /tmp/my-demo-connector.jar =:/tmp/my-demo-connector.jar
+    ```
+
+12. Run the `pxf restart` command to restart PXF on each segment host. For example:
+
+    ```
+    gpadmin@gpmaster$ gpssh -e -v -f seghostfile "/usr/local/greenplum-db/pxf/bin/pxf restart"
+    ```
+    
+13. Verify that you correctly registered the read profile for the *Demo* connector:
+
+    1. Connect to a database in which you created the PXF extension as the `gpadmin` user. For example, to connect to a database named `pxf_exampledb`:
+
+        ```
+        gpadmin@gpmaster$ psql -d pxf_exampledb -U gpadmin
+        ```
+        
+    2. Create a Greenplum external table specifying the `DemoReadLocalFS` profile name. For example:
+
+        ```
+        pxf_exampledb=# CREATE EXTERNAL TABLE demo_tbl_read (a TEXT, b TEXT, c TEXT)
+            LOCATION ('pxf://default/tmp/dummy1?PROFILE=DemoReadLocalFS')
+            FORMAT 'TEXT' (DELIMITER ',');
+        CREATE EXTERNAL TABLE
+        ```
+        
+        The Demo connector read operation returns static data. You could have specified any file path in the `LOCATION` clause; it will be ignored by the *Demo* connector.
+        
+    3. Query the `demo_tbl_read` table:
+
+        ```
+        pxf_exampledb=# SELECT * from demo_tbl_read;
+               a        |   b    |   c    
+        ----------------+--------+--------
+         fragment2 row1 | value1 | value2
+         fragment2 row2 | value1 | value2
+         fragment1 row1 | value1 | value2
+         fragment1 row2 | value1 | value2
+         fragment3 row1 | value1 | value2
+         fragment3 row2 | value1 | value2
+        (6 rows)
+        ```
+
+9. Verify that you correctly registered the *Demo* connector write profile:
+        
+    1. Create a Greenplum writable external table specifying the `DemoWriteLocalFS` profile name. For example:
+
+        ``` sql
+        pxf_exampledb=# CREATE WRITABLE EXTERNAL TABLE demo_tbl_write (a TEXT, b TEXT, c TEXT)
+            LOCATION ('pxf://tmp/demo_write_1?PROFILE=DemoWriteLocalFS')
+            FORMAT 'TEXT' (DELIMITER ',');
+        CREATE EXTERNAL TABLE
+        ```
+        
+    2. Write some text data into the `demo_tbl_write` table. For example:
+
+        ``` sql
+        pxf_exampledb=# INSERT INTO demo_tbl_write VALUES ('x', 'y', 'z');
+        INSERT 0 1
+        pxf_exampledb=# INSERT INTO demo_tbl_write VALUES ('u', 'v', 'w');
+        INSERT 0 1
+        pxf_exampledb=# INSERT INTO demo_tbl_write VALUES ('r', 's', 't');
+        INSERT 0 1
+        ```
+
+        Each `INSERT` command writes a file to the directory named  `/tmp/demo_write_1` on the local file system.  
+
+    4. View the contents of the `/tmp/demo_write_1` directory on the local file system. For example:
+
+        ``` shell
+        gpadmin@gpmaster$ cat /tmp/demo_write_1/*
+        x,y,z
+        u,v,w
+        r,s,t
+        ```
+
+You successfully deployed your *Demo* connector and associated profiles.
+
