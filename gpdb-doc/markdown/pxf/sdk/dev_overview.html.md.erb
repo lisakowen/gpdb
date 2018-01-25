@@ -5,39 +5,21 @@ If you are a Java developer, the Greenplum Platform Extension Framework (PXF) SD
 
 PXF in Greenplum Database is based on [PXF](https://cwiki.apache.org/confluence/display/HAWQ/PXF) from the open source Apache HAWQ (incubating) project. You can contribute to PXF development via the [Greenplum Database](https://github.com/greenplum-db/gpdb/tree/master/gpAux/extensions/pxf) and the [Apache HAWQ (incubating)](https://github.com/apache/incubator-hawq/tree/master/pxf) open source `github` repositories. 
 
-## <a id="prereqs"></a>Prerequisites
-
-Before you start developing with the PXF Java SDK, ensure that you:
-
-- Have Java programming experience.
-- Have access to a system on which you can develop Java code.
-- Are familiar with Greenplum Database external table concepts. Refer to the [CREATE EXTERNAL TABLE](../../ref_guide/sql_commands/CREATE_EXTERNAL_TABLE.html) reference page and [Using PXF to Read and Write External Data](../using_pxf.html) for more information.
-- Have administrative access to a running Greenplum Database cluster that you can use for deployment and testing purposes. You can use a commercial product distribution or a virtual machine or docker sandbox. <ph otherprops="pivotal">You can download a Greenplum Database sandbox from [Pivotal Network](https://network.pivotal.io/products/pivotal-gpdb).</ph> <ph otherprops="oss-only">You can also build Greenplum Database from [source](https://github.com/greenplum-db/gpdb).</ph>
-
-
 ## <a id="prereqs"></a>Topic Overview
 
-Topics in this section include:
+Topics in this guide include:
 
 -  **[PXF Developer Concepts](dev_concepts.html)**
 
-    This topic introduces important concepts for PXF developers including connectors, plug-ins, and profiles, and how PXF uses these entities within Greenplum Database to access external data sources.
+    This topic introduces important concepts for PXF developers including external tables, connectors, and plug-ins, and how PXF uses these entities within Greenplum Database to access external data sources.
 
--  **[Developing with the PXF SDK](dev_env.html)**
+-  **[Building a Connector](build_conn.html)**
 
-    This topic covers the activities involved when you develop with the PXF SDK, including the requirements for your PXF development environment.
+    This topic describes the process to build a connector. This topic also introduces the *Demo* connector, an example PXF connector to the local file system, and includes an exercise to build this connector.
 
--  **[Introducing the Demo Connector](intro_democonn.html)**
+-  **[Deploying a Connector](deploy_conn.html)**
 
-    This topic introduces the *Demo* connector, an example PXF connector to the local file system, and includes an exercise to make a local copy of and build your version of the *Demo* connector.
-
--  **[Defining and Deploying a Connector Profile](profiles.html)**
-
-    This topic describes the process required to define and deploy a PXF profile for your connector or plug-in. It also includes an exercise to create read and write profiles for the *Demo* connector.
-
--  **[Defining External Table Parameters](exttbl_opts.html)**
-
-    This topic covers the `CREATE EXTERNAL TABLE` command parameters, including the custom options and formatting properties that your connector supports.
+    This topic describes the process required to register and deploy a connector to a Greenplum Database cluster. It also includes an exercise to deploy the *Demo* connector and verify that the connector was deployed successfully.
 
 -  **[PXF API Javadocs](http://hawq.incubator.apache.org/docs/pxf/javadoc/)**
 
