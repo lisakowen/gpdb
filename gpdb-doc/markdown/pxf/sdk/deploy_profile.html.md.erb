@@ -3,11 +3,11 @@ title: Deploying a Profile
 ---
 As a developer using the PXF SDK, you may extend the plug-in classes of PXF built-in connectors or you may implement your own plug-in classes. You or the Greenplum Database administrator may then choose to create a profile definition(s) for your connector as a convenience for the end user.
 
-A PXF profile encapulates access to [a specific format of data from] a specific external data source using a simple name. PXF is installed with HDFS, Hive, and HBase connectors that expose a number of built-in profiles supporting specific data formats. The [PXF Profiles](../using_pxf.html#built-inprofiles) section in the PXF end user documentation identifies the list of built-in PXF profiles. 
+A PXF profile encapulates access to [a specific format of data from] a specific external data source using a simple name. PXF is installed with HDFS, Hive, and HBase connectors that expose a number of built-in profiles supporting specific data formats. The [PXF Profiles](../using_pxf.html#built-inprofiles) section in the PXF end user documentation identifies the list of PXF built-in profiles. 
 
 A profile definition for a connector includes the name of the profile, a description, and the Java classes (plug-ins) that PXF will use to access and manipulate data to/from the external data source.
 
-Profile definitions for PXF built-in connectors are defined in the `$GPHOME/pxf/conf/pxf-profiles-default.xml` configuration file. Profile definitions for third-party connectors are registered in the `$GPHOME/pxf/conf/pxf-profiles.xml` file.
+Profile definitions for PXF built-in connectors are defined in the `$GPHOME/pxf/conf/pxf-profiles-default.xml` configuration file. The Greenplum Database administrator registers Profile definitions for third-party connectors in the `$GPHOME/pxf/conf/pxf-profiles.xml` file.
 
 The built-in `HdfsTextSimple` profile definition is reproduced below:
 
@@ -108,7 +108,7 @@ In this exercise, you define and register a read profile and a write profile for
 
 ### <a id="profile_prereqs"></a>Prerequisites
 
-Before attempting this exercise, ensure that you have met the [Prerequisites](deploy_conn.html#deploy_prereqs) identified in <i>Example: Deploying the Demo Connector</i>.
+Before attempting this exercise, ensure that you have completed the [Example: Deploying the Demo Connector](deploy_conn.html#example) exercise.
 
 ### <a id="procedure"></a>Procedure
 

@@ -3,8 +3,6 @@ title: PXF Developer Concepts
 ---
 The PXF SDK provides the classes and interfaces that you use to implement support for new external data sources, data formats, and data access APIs in Greenplum Database. You can also use the PXF SDK to extend existing external data sources, formats, and APIs.
 
-The PXF API defines the data structures, classes, and interfaces that you need to map external data into a tabular form suitable for Greenplum Database, and vice-versa.
-
 When you develop with the PXF SDK, you ultimately build a JAR file. The Greenplum Database administrator deploys your JAR file to the Greenplum Database cluster. The Greenplum Database end user accesses your external data source/format/API when he invokes a `CREATE EXTERNAL TABLE` command specifying the `pxf` protocol.
 
 This topic introduces concepts central to developing with the PXF SDK. These concepts will be discussed in detail in later sections of this guide.

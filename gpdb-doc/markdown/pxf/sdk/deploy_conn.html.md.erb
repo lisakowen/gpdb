@@ -4,7 +4,7 @@ title: Deploying a Connector
 
 When you are ready to deploy your connector, you must package the connector JAR file. You must also package any run-time dependencies of your connector or provide information on how/where to satisfy these dependencies.
 
-The Greenplum Database administrator deploys a connector to a Greenplum Database cluster by first registering the connector and dependencies, and then copying relevant JAR and configuration files across the Greenplum Database cluster. Once thus deployed, the administrator will restart the PXF service.
+The Greenplum Database administrator deploys a connector to a Greenplum Database cluster by first registering the connector and dependencies, and then copying relevant JAR and configuration files across the Greenplum Database cluster. Once thus deployed, the administrator must restart the PXF service.
 
 
 ## <a id="runtime_depends"></a> Identifying Connector Run-Time Dependencies
@@ -42,7 +42,7 @@ The administrator must also install any third-party commands or other components
 
 ## <a id="verify_deploy"></a>Verifying Connector Deployment
 
-To verify that you deployed you connector successfully, you create a Greenplum Database external table and invoke `SELECT` and/or `INSERT` commands on the table to test read and write operations on the external data source.
+To verify that you deployed your connector successfully, you create a Greenplum Database external table and invoke `SELECT` and/or `INSERT` commands on the table to test read and write operations on the external data source.
 
 The Greenplum Database end user accesses an external data source by invoking a `CREATE EXTERNAL TABLE` command specifying the `pxf` protocol. (Refer to the [CREATE EXTERNAL TABLE](../../ref_guide/sql_commands/CREATE_EXTERNAL_TABLE.html) reference page for more about this Greenplum Database command.)
 
@@ -60,11 +60,13 @@ LOCATION('pxf://<path-to-data>?[FRAGMENTER=<fragmenter_class>
 FORMAT '[TEXT|CSV|CUSTOM]' (<formatting-properties>);
 ```
 
+The `LOCATION` clause identifies the Java plug-in classes that PXF will use to split (`FRAGMENTER`), read and/or write (`ACCESSOR`), and deserialize/serialize (`RESOLVER`) the external data.
+
 ## <a id="about_connector"></a>About the Demo Connector
 
 Recall that your copy of the *Demo* connector resides in the `org.greenplum.pxf.example.demo` package.
 
-### <a id="demo_classes"></a>Connector Plug-in Classes
+### <a id="demo_classes"></a>Plug-in Classes
 
 The Demo connector read operation utilizes the following plug-in classes:
 
