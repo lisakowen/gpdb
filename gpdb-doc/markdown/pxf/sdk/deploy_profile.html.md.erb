@@ -1,6 +1,8 @@
 ---
 title: Deploying a Profile
 ---
+As a developer using the PXF SDK, you may extend the plug-in classes of PXF built-in connectors or you may implement your own plug-in classes. You or the Greenplum Database administrator may then choose to create a profile definition(s) for your connector as a convenience for the end user.
+
 A PXF profile encapulates access to [a specific format of data from] a specific external data source using a simple name. PXF is installed with HDFS, Hive, and HBase connectors that expose a number of built-in profiles supporting specific data formats. The [PXF Profiles](../using_pxf.html#built-inprofiles) section in the PXF end user documentation identifies the list of built-in PXF profiles. 
 
 A profile definition for a connector includes the name of the profile, a description, and the Java classes (plug-ins) that PXF will use to access and manipulate data to/from the external data source.
@@ -28,7 +30,13 @@ The profile \<plugins\> identify the Java classes that PXF will use to split (\<
 
 ## <a id="define_profile"></a>Defining a New Profile
 
-As a developer using the PXF SDK, you may extend the plug-in classes of PXF built-in connectors or you may implement your own plug-in classes. You or the Greenplum Database administrator may then decide to create a profile definition(s) as a convenience for the end user.
+When you define a new profile, you:
+
+- Choose a name for the profile.
+- Specify the fragmenter, resolver, and accessor plug-in class names.
+- Construct a profile definition in XML format.
+- Register the profile with PXF and Greenplum Database.
+
 
 ### <a id="select_classes"></a>Specifying the Plug-in Class Names
 
