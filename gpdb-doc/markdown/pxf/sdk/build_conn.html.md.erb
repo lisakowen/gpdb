@@ -2,7 +2,7 @@
 title: Building a Connector
 ---
 
-This section describes considerations for building a connector, including selecting an IDE and/or build tool and identifying compile-time dependencies.
+This section describes considerations for building a connector, including selecting an IDE and/or build tool, setting up the PXF development environment, and identifying compile-time dependencies.
 
 **Note**: The PXF developer documentation includes a set of exercises to expand on the topics covered. These exercises operate on a built-in PXF connecter named *Demo*, an example connector to the local file system. You will be developing with a local copy of the *Demo* connector throughout exercises in this guide.
 
@@ -50,7 +50,7 @@ Perform the following procedure to set up your PXF development environment. This
     user@devsystem$ export PXFDEV_BASE=`pwd`
     ```
 
-    This documentation references this work directory in later exercises. You may consider adding `$PXFDEV_BASE` to your `.bash_profile` or equivalent shell initialization script.
+    This guide references this work directory in later exercises. You may consider adding `$PXFDEV_BASE` to your `.bash_profile` or equivalent shell initialization script.
 
 2. If not already present on your development system, install Java Development Kit version 1.7 or 1.8. You must have superuser permissions to install operating system packages. For example, to install the JDK on a CentOS development system:
 
