@@ -42,7 +42,7 @@ The administrator must also install any third-party commands or other components
 
 ## <a id="verify_deploy"></a>Verifying Connector Deployment
 
-To verify that a connector to an external data source was deployed successfully, you create a Greenplum Database external table and invoke `SELECT` and/or `INSERT` commands on the table to test read and write operations on the data source.
+To verify that you deployed you connector successfully, you create a Greenplum Database external table and invoke `SELECT` and/or `INSERT` commands on the table to test read and write operations on the external data source.
 
 The Greenplum Database end user accesses an external data source by invoking a `CREATE EXTERNAL TABLE` command specifying the `pxf` protocol. (Refer to the [CREATE EXTERNAL TABLE](../../ref_guide/sql_commands/CREATE_EXTERNAL_TABLE.html) reference page for more about this Greenplum Database command.)
 

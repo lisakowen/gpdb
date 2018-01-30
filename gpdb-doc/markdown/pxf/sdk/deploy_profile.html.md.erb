@@ -28,13 +28,13 @@ The profile \<plugins\> identify the Java classes that PXF will use to split (\<
 
 ## <a id="define_profile"></a>Defining a New Profile
 
-As a developer using the PXF SDK, you may extend the plug-in classes of PXF built-in connectors or you may implement your own plug-in classes. You or the Greenplum Database administrator may then decide to create a profile definition(s) to expose your connector to end users.
+As a developer using the PXF SDK, you may extend the plug-in classes of PXF built-in connectors or you may implement your own plug-in classes. You or the Greenplum Database administrator may then decide to create a profile definition(s) as a convenience for the end user.
 
 ### <a id="select_classes"></a>Specifying the Plug-in Class Names
 
-plug-in class name that you specify in a profile definition must be a fully-qualified Java class name.
+The plug-in class name that you specify in a profile definition must be a fully-qualified Java class name.
 
-One each of *Fragmenter*, *Accessor*, and *Resolver* plug-in class names must be provided for a profile that supports reading from an external data store. Both an *Accessor* and a *Resolver* plug-in class name must be provided for a profile that supports writing to an external data store.
+When you define a profile that supports reading from an external data store, you must provide one each of *Fragmenter*, *Accessor*, and *Resolver* plug-in class names. You must provide both an *Accessor* and a *Resolver* plug-in class name for a profile that supports writing to an external data store.
 
 You can use a profile or set of plug-ins for both reading *and* writing when the *Accessor* plug-in class implements the `ReadAccessor` and `WriteAccessor` interfaces and the *Resolver* plug-in class implements `ReadResolver` and `WriteResolver` interfaces.
 
@@ -57,7 +57,7 @@ You can re-use a specific plug-in class name in multiple profile definitions. Fo
 
 ### <a id="construct_profile"></a>Constructing a Profile Definition
 
-A profile definition is a complete \<profile\> ... \<\profile\> block that identifies the name of the profile, a text description, and the fully-qualified class names of the *Fragmenter* (read), *Accessor*, and *Resolver* classes that implement access to the external data source.
+A profile definition is a complete \<profile\> ... \<\profile\> XML block that identifies the name of the profile, a text description, and the fully-qualified class names of the *Fragmenter* (read), *Accessor*, and *Resolver* classes that implement access to the external data source.
 
 ``` xml
 <profile>
@@ -73,14 +73,14 @@ A profile definition is a complete \<profile\> ... \<\profile\> block that ident
 
 ### <a id="reg_profile"></a>Registering a New Profile
 
-When you register a new profile with PXF, you add the profile definition to the `$GPHOME/pxf/conf/pxf-profiles.xml` file. When updating `pxf-profiles.xml`, ensure that you add the profile definition between the \<profiles\> and \<\profiles\> (notice the *s*) keywords in the file.
+When you register a new profile with PXF, you add the profile definition to the `$GPHOME/pxf/conf/pxf-profiles.xml` file. When you update `pxf-profiles.xml`, ensure that you add the profile definition between the \<profiles\> and \<\profiles\> (notice the *s*) keywords in the file.
 
 **Note**: In a typical Greenplum Database deployment, `pxf-profiles.xml` will contain multiple third-party profile definitions.
 
 
 ## <a id="deploy_to_cluster"></a>Deploying to the Greenplum Database Cluster
 
-When you deploy a new profile, you must propogate any updates you made to the `pxf-profiles.xml` file to each segment host, and then you must restart the PXF service on each host. Only Greenplum Database administrative users can register PXF dependencies and restart the PXF service. 
+When you deploy a new profile, you must copy the updated `pxf-profiles.xml` file to each segment host, and then you must restart the PXF service on each host. Only Greenplum Database administrative users can register PXF dependencies and restart the PXF service. 
 
 For example, if `seghostfile` contains a list, one-host-per-line, of the segment hosts in your Greenplum Database cluster:
 
@@ -91,7 +91,7 @@ gpadmin@gpmaster$ gpssh -e -v -f seghostfile "/usr/local/greenplum-db/pxf/bin/px
 
 ## <a id="verify_profile_reg"></a>Verifying Profile Registration
 
-To verify registration and deployment of a new profile, you create a Greenplum Database external table specifying the profile name and invoke `SELECT` and/or `INSERT` commands on the table to test read and write operations on the external data source.
+To verify the registration and deployment of a new profile, you create a Greenplum Database external table specifying the profile name and invoke `SELECT` and/or `INSERT` commands on the table to test read and write operations on the external data source.
 
 ## <a id="example_profile"></a>Example: Defining and Deploying Demo Connector Profiles
 
