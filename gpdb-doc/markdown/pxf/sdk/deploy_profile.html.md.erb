@@ -33,7 +33,7 @@ The profile \<plugins\> identify the Java classes that PXF will use to split (\<
 When you define a new profile, you:
 
 - Choose a name for the profile.
-- Specify the fragmenter, resolver, and accessor plug-in class names.
+- Specify the *Fragmenter*, *Resolver*, and *Accessor* plug-in class names.
 - Construct a profile definition in XML format.
 - Register the profile with PXF and Greenplum Database.
 
@@ -88,7 +88,7 @@ When you register a new profile with PXF, you add the profile definition to the 
 
 ## <a id="deploy_to_cluster"></a>Deploying to the Greenplum Database Cluster
 
-When you deploy a new profile, you must copy the updated `pxf-profiles.xml` file to each segment host, and then you must restart the PXF service on each host. Only Greenplum Database administrative users can register PXF dependencies and restart the PXF service. 
+When you deploy a new profile, you must copy the updated `pxf-profiles.xml` file to each segment host, and then you must restart the PXF service on each host. Only Greenplum Database administrative users can register profiles and restart the PXF service.
 
 For example, if `seghostfile` contains a list, one-host-per-line, of the segment hosts in your Greenplum Database cluster:
 
