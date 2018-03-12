@@ -4,7 +4,7 @@ title: Introducing the PXF API
 
 You use the PXF API to add support for a new external data store, data format, or data access API to Greenplum Database. You can also use the PXF API to extend existing external data stores, formats, and APIs. The PXF API defines the data structures, classes, and interfaces that you need to map external data into a tabular form suitable for Greenplum Database, and vice-versa.
 
-The PXF API interfaces that you implement or extend will depend upon the external data store/API, data types, and operations (read, write) that your connector or plug-in will support, as well as what features you want to provide. 
+The PXF API interfaces that you implement or extend will depend upon the external data store/API, data types, and operations (read, write) that your connector or plug-in will support, as well as the specific features you want to provide. 
 
 The PXF API defines classes including the following:
 
@@ -23,13 +23,11 @@ The PXF API exposes the following interfaces:
 | Interface Name  | Description                                |
 |------------------|--------------------------------------------|
 | `ReadAccessor` |  Reads a `Fragment` and generates a list of `OneRow` records.  |
-| `WriteAccessor` |  Writes `OneRow` records to the external data source. |
 | `ReadResolver` |  Deserializes a single `OneRow` record into a list of `OneField` objects.  |
 | `ReadVectorizedResolver` |  Deserializes a batch of `OneRow` records into tuples of `OneField` objects.  |
 | `WriteResolver` |  Serializes a list of `OneField` objects into a single `OneRow` record. |
+| `WriteAccessor` |  Writes `OneRow` records to the external data source. |
 
-
-This topic introduces the PXF API data type classes and interfaces mentioned above. 
 
 Refer to the [PXF API JavaDocs](http://hawq.incubator.apache.org/docs/pxf/javadoc/) for detailed information about the classes and interfaces exposed by the API.
 

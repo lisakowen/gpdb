@@ -4,7 +4,7 @@ title: Building a Connector
 
 This section describes considerations for building a connector, including selecting an IDE and/or build tool, setting up the PXF development environment, and identifying compile-time dependencies.
 
-**Note**: The PXF developer documentation includes a set of exercises to expand on the topics covered. These exercises operate on a built-in PXF connecter named *Demo*, an example connector to the local file system. You will be developing with a local copy of the *Demo* connector throughout exercises in this guide.
+**Note**: The PXF developer documentation includes a set of exercises that expand on the topics covered. These exercises operate on a built-in PXF connecter named *Demo*, an example connector to the local file system. You will extend a local copy of the *Demo* connector throughout exercises in this guide.
 
 
 ## <a id="identify_depends"></a>Identifying Connector Compile-Time Dependencies
@@ -50,7 +50,7 @@ Perform the following procedure to set up your PXF development environment. This
     user@devsystem$ export PXFDEV_BASE=`pwd`
     ```
 
-    This guide references this work directory in later exercises. You may consider adding `$PXFDEV_BASE` to your `.bash_profile` or equivalent shell initialization script.
+    Exercises in this guide reference your work directory. You may consider adding `$PXFDEV_BASE` to your `.bash_profile` or equivalent shell initialization script.
 
 2. If not already present on your development system, install Java Development Kit version 1.7 or 1.8. You must have superuser permissions to install operating system packages. For example, to install the JDK on a CentOS development system:
 
@@ -58,7 +58,7 @@ Perform the following procedure to set up your PXF development environment. This
     root@devsystem$ sudo yum install java-1.8.0-openjdk-1.8.0*
     ```
 
-3. Obtain the PXF API JAR file `pxf-api-<version>.jar` and copy to your work directory. You can copy this file from your Greenplum Database installation, or from a PXF build from source. For example:
+3. Obtain the PXF API JAR file `pxf-api-<version>.jar` and copy to your work directory. You can copy this file from your Greenplum Database installation. For example:
 
     ``` shell
     user@devsystem$ cd $PXFDEV_BASE
@@ -71,45 +71,45 @@ Perform the following procedure to set up your PXF development environment. This
     user@devsystem$ scp gpuser@gpmaster:/usr/local/greenplum-db/pxf/lib/pxf-hdfs-<version>.jar .
     ```
 
-## <a id="about_demo"></a>About the Demo Connector
-
-The *Demo* connector supports read and write operations on text format files on the local file system. The *Demo* connector read operation currently returns static data. The *Demo* connector fully supports writing to the local file system.
-
-### <a id="demo_names"></a>Package and Class Names
-
-Your local copy of the *Demo* connector source code will reside in the `org.greenplum.pxf.example.demo` package.
-
-The *Demo* connector implements the following plug-in classes:
-
-|  Class Name | Description |
-|-----------|----------------|
-| DemoFragmenter | Template implementation of the `Fragmenter` class.  Returns static fragment information. |
-| DemoAccessor | Template implementation of the `ReadAccessor` interface. Returns static data. |
-| DemoTextResolver | Implements `ReadResolver` and `WriteResolver` interfaces. Deserializes and serializes text format data. |
-| DemoFileWritableAccessor | Implements the `WriteAccessor` interface. Writes text format data to the local file system. |
-
-
-### <a id="demo_depends"></a>Compile-Time Dependencies
-
-The *Demo* connector has compile-time dependencies on the `pxf-api-<version>.jar` file and the Apache Commons Logging JAR file, `commons-logging.jar`.
-
-When you build the *Demo* connector in the next exercise, you will satisfy these compile-time dependencies via a local file and a maven repository.
-
 
 ## <a id="demo_buildjar"></a>Example: Building the Demo Connector JAR file
 
-This exercise operates on a local copy of the *Demo* connector and utilizes the build tool `gradle`. You may choose to use an IDE or a different, equivalent build tool.
+In this exercise, you create a local copy of the *Demo* connector and use the build tool `gradle` to build your local copy. You may choose to use an IDE or a different, equivalent, build tool.
+
+### <a id="about_demo"></a>About the Demo Connector
+
+The *Demo* connector supports read and write operations on text format files stored on the local file system. The *Demo* connector read operation currently returns static data. The *Demo* connector fully supports writing to the local file system.
+
+#### <a id="demo_names"></a>Package and Class Names
+
+Your local copy of the *Demo* connector source code will reside in a packaged named `org.greenplum.pxf.example.demo`.
+
+The *Demo* connector plug-in classes:
+
+|  Class Name | Description |
+|-----------|----------------|
+| `DemoFragmenter` | Template implementation of the `Fragmenter` class.  Returns static fragment information. |
+| `DemoAccessor` | Template implementation of the `ReadAccessor` interface. Returns static data. |
+| `DemoTextResolver` | Implements `ReadResolver` and `WriteResolver` interfaces. Deserializes and serializes text format data. |
+| `DemoFileWritableAccessor` | Implements the `WriteAccessor` interface. Writes text format data to the local file system. |
+
+
+#### <a id="demo_depends"></a>Compile-Time Dependencies
+
+The *Demo* connector has compile-time dependencies on the `pxf-api-<version>.jar` file and the Apache Commons Logging JAR file, `commons-logging.jar`.
+
+When you build the *Demo* connector in this exercise, you will satisfy these compile-time dependencies via a local file and a maven repository.
 
 ### <a id="build_prereqs"></a>Prerequisites
 
 Before building the *Demo* connector, ensure that you have:
 
-- Set up your development environment as described earlier.
+- Set up your development environment as described in an earlier topic.
 - Installed `gradle` on your development system. Refer to [Gradle Build Tool Installation](https://gradle.org/install/#helpful-information) for instructions.
 
 ### <a id="build_procedure"></a>Procedure
 
-Perform the following procedure to make a local copy of the *Demo* connector source code, update package names, configure compile-time dependencies, and use `gradle` to build the connector.
+Perform the following procedure to create a local copy of the *Demo* connector source code, update package names, configure compile-time dependencies, and use `gradle` to build the connector.
 
 1. Download the PXF *Demo* connector source code. You can obtain the PXF source code from the Apache HAWQ (incubating) `incubator-hawq` `github` repository. For example:
 
@@ -120,21 +120,21 @@ Perform the following procedure to make a local copy of the *Demo* connector sou
 
     The `clone` operation creates a directory named `incubator-hawq/` in your current working directory.
    
-2. Create a project directory for your copy of the source code. For example:
+2. Create a project directory for your copy of the source code and navigate to that directory. For example:
 
     ``` shell
     user@devsystem$ mkdir demo_example
+    user@devsystem$ cd demo_example
     ```
     
 3. Create a `libs` directory for dependent packages, and copy the PXF API JAR file you previously downloaded to `libs/`. For example:
 
     ``` shell
-    user@devsystem$ cd demo_example
     user@devsystem$ mkdir libs
     user@devsystem$ cp $PXFDEV_BASE/pxf-api-<version>.jar libs/
     ```
     
-4. The *Demo* connector source code is located in the `incubator-hawq/pxf/pxf-api/src/main/java/org/apache/hawq/pxf/api/examples` directory of the repository you cloned in Step 1. Copy this code to your work area. For example:
+4. The source code for the PXF *Demo* connector is located in the `incubator-hawq/pxf/pxf-api/src/main/java/org/apache/hawq/pxf/api/examples` directory of the repository you cloned in Step 1. Copy this code to your work area. For example:
 
     ``` shell
     user@devsystem$ mkdir -p src/main/java/org/greenplum/pxf/example/demo
@@ -142,13 +142,13 @@ Perform the following procedure to make a local copy of the *Demo* connector sou
     user@devsystem$ cp $PXFDEV_BASE/incubator-hawq/pxf/pxf-api/src/main/java/org/apache/hawq/pxf/api/examples/* .
     ```
 
-5. The original *Demo* connector resides in the `org.apache.hawq.pxf.api.examples` package. Your *Demo* connector resides in the `org.greenplum.pxf.example.demo` package. Update the package name in your local copy of the *Demo* connector source code. You can edit the files, run a script, etc. For example:
+5. The original PXF *Demo* connector resides in the `org.apache.hawq.pxf.api.examples` package. Your *Demo* connector resides in a package named `org.greenplum.pxf.example.demo`. Update the package name in your local copy of the *Demo* connector source code. You can edit the files, run a script, etc. For example:
 
     ``` shell
     user@devsystem$ sed -i.bak s/"org.apache.hawq.pxf.api.examples"/"org.greenplum.pxf.example.demo"/g *.java
     ```
 
-    This `sed` command creates a backup of each file. Remove the backups. For example:
+    The `sed` command above creates a backup of each file. Remove the backup files. For example:
     
     ``` shell
     user@devsystem$ rm *.bak
@@ -161,9 +161,9 @@ Perform the following procedure to make a local copy of the *Demo* connector sou
     user@devsystem$ gradle init --type java-library
     ```
 
-    This command generates build configuration files and scripts. You must customize the `build.gradle` and `settings.gradle` files for your *Demo* connector project.
+    This command generates build configuration files and scripts. Before building your *Demo* connector project, you must customize the `build.gradle` and `settings.gradle` files.
 
-7. Gradle uses the `settings.gradle` `rootProject.name` setting as the base name of the built Java library JAR file. The default `rootProject.name` value is the base name of current working directory. Edit the `settings.gradle` file and supply a custom root project name for your *Demo* connector. For example:
+7. Gradle uses the `settings.gradle` file `rootProject.name` setting for the base name of the built Java library JAR file. The default `rootProject.name` setting value is the base name of current working directory. Edit the `settings.gradle` file and supply a custom root project name for your *Demo* connector. For example:
 
     ``` shell
     user@devsystem$ vi settings.gradle
@@ -173,13 +173,13 @@ Perform the following procedure to make a local copy of the *Demo* connector sou
     rootProject.name = 'my-demo-connector'
     ```
 
-8. Gradle uses the `build.gradle` file to, among other configuration, identify the compile time dependencies for a project. Your *Demo* connector depends on the PXF API JAR file and the `commons-logging.jar` file. You downloaded the PXF API JAR file, it is available locally. The `commons-logging.jar` file is available from a maven repository. Edit your `build.gradle` file to supply these dependencies. For example:
+8. Gradle uses the `build.gradle` file to, among other configuration, identify the compile time dependencies for a project. Your *Demo* connector depends on the PXF API JAR file (available locally) and the `commons-logging.jar` file (available from a maven repository). Edit your `build.gradle` file to supply these dependencies. For example:
 
     ``` shell
     user@devsystem$ vi build.gradle
     ```
 
-    Search for the `repositories` block and add the bolded text to identify the location of the PXF API JAR file. Remember that you copied this file to the `libs/` directory in Step 3. For example:
+    Search for the `repositories` block, and add the bolded text to identify the location of the PXF API JAR file. Recall that you copied this file to the `libs/` directory in Step 3. For example:
 
     <pre>
     repositories {
@@ -219,5 +219,5 @@ Perform the following procedure to make a local copy of the *Demo* connector sou
     my-demo-connector.jar
     ```
 
-    You will test and deploy your connector JAR file in an upcoming exercise.
+    You will deploy and test your *Demo* connector JAR file in an upcoming exercise.
 

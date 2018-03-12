@@ -18,15 +18,15 @@ A *profile* is a simple name mapping to a set of connector plug-in class names. 
 PXF in Greenplum Database has two components:
 
 - A C shared library that is loaded into Greenplum Database when the `CREATE EXTENSION pxf` comand is invoked on a database.
-- A Java service, referred to as the PXF agent, a single JVM process on each Greenplum Database segment host.
+- A Java service, referred to as the PXF agent, a single JVM process located on each Greenplum Database segment host.
 
 Operations on Greenplum Database external tables created with the `pxf` protocol are first routed to the PXF C shared library extension then on to the PXF agent.
 
-The PXF C library validates PXF-specific parameters when the end user invokes the `CREATE EXTERNAL TABLE` command. It is not until the end user `SELECT`s (read) or `INSERT`s into (write) the external table that Greenplum Database initiates communication with the PXF agent, which in turn invokes a connector's plug-in classes.
+The PXF C library validates PXF-specific parameters when the Greenplum Database end user invokes the `CREATE EXTERNAL TABLE` command. It is not until the end user `SELECT`s (read) or `INSERT`s into (write) the external table that Greenplum Database initiates communication with the PXF agent, which in turn invokes a connector's plug-in classes.
 
 The PXF agent initiates a read operation on the external data source when the user runs a `SELECT` command on an external table created with the `pxf` protocol. The PXF agent spawns a thread that invokes the connector *Fragmenter*, which splits data from an external data source into a list of fragments that can be read in parallel. A read *Accessor* reads a single fragment from an external data source and produces a list of records/rows. The read *Resolver* deserializes a record/row into fields. Finally, PXF translates these fields into Greenplum Database table column values. 
 
 <img src="../graphics/pxfreadwrite.png" class="image" />
 
-The PXF agent initiates a write operation to the external data source when the user invokes an `INSERT` or similar command on an external table created with the `pxf` protocol. When writing to an external data source, PXF translates Greenplum Database table column values to fields and invokes the write *Resolver*. The write *Resolver* serializes these fields into a record. The write *Accessor* writes a record directly to the external data source.
+The PXF agent initiates a write operation to the external data source when the user invokes an `INSERT` or similar command on a writable external table created with the `pxf` protocol. When writing to an external data source, PXF translates Greenplum Database table column values into fields and invokes the connector write *Resolver*. The write *Resolver* serializes these fields into a record. The write *Accessor* writes a record directly to the external data source.
 
