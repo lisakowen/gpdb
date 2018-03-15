@@ -3,7 +3,7 @@ title: Deploying a Profile
 ---
 As a developer using the PXF SDK, you may extend the plug-in classes of PXF built-in connectors or you may implement your own plug-in classes. You or the Greenplum Database administrator may then choose to register and deploy a profile definition(s) for the connector as a convenience for the end user.
 
-A PXF profile encapulates access to [a specific format of data from] a specific external data source using a simple name. PXF is installed with HDFS, Hive, and HBase connectors that expose a number of built-in profiles that support specific data formats in these data stores. The [PXF Profiles](../using_pxf.html#built-inprofiles) section in the PXF end user documentation identifies the list of PXF built-in profiles. 
+A PXF profile encapulates access to a specific format of data from a specific external data source using a simple name. PXF is installed with HDFS, Hive, and HBase connectors that expose a number of built-in profiles that support specific data formats in these data stores. The [PXF Profiles](../using_pxf.html#built-inprofiles) section in the PXF end user documentation identifies the list of PXF built-in profiles. 
 
 A profile definition for a connector includes the name of the profile, a description, and the Java classes (plug-ins) that PXF will use to access and manipulate data to/from the external data source.
 
@@ -25,7 +25,7 @@ The built-in `HdfsTextSimple` profile definition is reproduced below:
 </profile>
 ```
 
-The profile \<plugins\> identify the Java classes that PXF will use to split (\<fragmenter\>), read and/or write (\<accessor\>), and deserialize/serialize (\<resolver\>) the external data. The profile \<name\> provides a simple mapping to these plug-in classes. The Greenplum Database end user provides the profile name or the Java plug-in class names when he creates an external table to access the external data.
+The profile \<plugins\> identify the Java classes that PXF will use to split (\<fragmenter\>), read and/or write (\<accessor\>), and deserialize/serialize (\<resolver\>) the external data. The profile \<name\> provides a simple mapping to these plug-in classes. The Greenplum Database end user provides the profile name or the Java plug-in class names when creating an external table to access the external data.
 
 
 ## <a id="define_profile"></a>Defining a New Profile
@@ -116,7 +116,7 @@ Perform the following procedure to define and register a read profile and a writ
 
 1. Log in to the Greenplum Database master node as an administrative user and set up your environment:
 
-    ```
+    ``` shell
     $ ssh gpadmin@<gpmaster>
     gpadmin@gpmaster$ . /usr/local/greenplum-db/greenplum_path.sh
     ```
@@ -166,7 +166,7 @@ Perform the following procedure to define and register a read profile and a writ
 
 7. Run the `pxf restart` command to restart PXF on each segment host. For example:
 
-    ```
+    ``` shell
     gpadmin@gpmaster$ gpssh -e -v -f seghostfile "/usr/local/greenplum-db/pxf/bin/pxf restart"
     ```
     
@@ -174,13 +174,13 @@ Perform the following procedure to define and register a read profile and a writ
 
     1. Connect to a database in which you created the PXF extension as the `gpadmin` user. For example, to connect to a database named `pxf_exampledb`:
 
-        ```
+        ``` shell
         gpadmin@gpmaster$ psql -d pxf_exampledb -U gpadmin
         ```
         
     2. Create a readable Greenplum external table specifying the `DemoReadLocalFS` profile name. For example:
 
-        ```
+        ``` sql
         pxf_exampledb=# CREATE EXTERNAL TABLE demo_tbl_read_wp (a TEXT, b TEXT, c TEXT)
             LOCATION ('pxf://default/tmp/dummy1?PROFILE=DemoReadLocalFS')
             FORMAT 'TEXT' (DELIMITER ',');
@@ -189,7 +189,7 @@ Perform the following procedure to define and register a read profile and a writ
  
     3. Query the `demo_tbl_read_wp` table:
 
-        ```
+        ``` sql
         pxf_exampledb=# SELECT * from demo_tbl_read_wp;
                a        |   b    |   c    
         ----------------+--------+--------
@@ -232,6 +232,4 @@ Perform the following procedure to define and register a read profile and a writ
         ```
 
 You successfully deployed *Demo* connector read and write profiles.
-
-
 

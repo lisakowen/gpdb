@@ -58,7 +58,7 @@ Perform the following procedure to set up your PXF development environment. This
     root@devsystem$ sudo yum install java-1.8.0-openjdk-1.8.0*
     ```
 
-3. Obtain the PXF API JAR file `pxf-api-<version>.jar` and copy to your work directory. You can copy this file from your Greenplum Database installation. For example:
+3. Obtain the PXF API JAR file `pxf-api-<version>.jar` and copy it to your work directory. You can copy this file from your Greenplum Database installation. For example:
 
     ``` shell
     user@devsystem$ cd $PXFDEV_BASE
@@ -173,7 +173,7 @@ Perform the following procedure to create a local copy of the *Demo* connector s
     rootProject.name = 'my-demo-connector'
     ```
 
-8. Gradle uses the `build.gradle` file to, among other configuration, identify the compile time dependencies for a project. Your *Demo* connector depends on the PXF API JAR file (available locally) and the `commons-logging.jar` file (available from a maven repository). Edit your `build.gradle` file to supply these dependencies. For example:
+8. Gradle uses the `build.gradle` file to identify the compile time dependencies for a project and other configuration. Your *Demo* connector depends on the PXF API JAR file (available locally) and the `commons-logging.jar` file (available from a maven repository). Edit your `build.gradle` file to supply these dependencies. For example:
 
     ``` shell
     user@devsystem$ vi build.gradle

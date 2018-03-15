@@ -2,7 +2,7 @@
 title: Deploying a Connector
 ---
 
-The Greenplum Database administrator deploys a connector to a Greenplum Database cluster by first registering the connector and its dependencies, and then copying relevant JAR and configuration files across the Greenplum Database cluster. Once thus deployed, the administrator must restart the PXF agent.
+The Greenplum Database administrator deploys a connector to a Greenplum Database cluster by first registering the connector and its dependencies, and then copying relevant JAR and configuration files across the Greenplum Database cluster. After deploying the connector, the administrator must restart the PXF agent.
 
 
 ## <a id="runtime_depends"></a> Identifying Connector Run-Time Dependencies
@@ -24,7 +24,7 @@ The Greenplum Database administrator registers a third-party connector and its r
 
 ## <a id="deploy_to_cluster"></a>Deploying to the Greenplum Database Cluster
 
-When the Greenplum Database administrator deploys a new connector, he copies the connector JAR file and the (JAR) files of any dependencies to each Greenplum Database segment host. The administrator must also propogate any updates to the `pxf-public.classpath` configuration file to each segment host, and then must restart the PXF agent on each host. Only the Greenplum Database administrative user can restart the PXF agent. 
+When the Greenplum Database administrator deploys a new connector, they copy the connector JAR file and the (JAR) files of any dependencies to each Greenplum Database segment host. The administrator must also propagate any updates to the `pxf-public.classpath` configuration file to each segment host, and then must restart the PXF agent on each host. Only the Greenplum Database administrative user can restart the PXF agent. 
 
 For example, if `seghostfile` contains a list, one-host-per-line, of the segment hosts in your Greenplum Database cluster, these commands deploy the connector across the cluster:
 
@@ -44,7 +44,7 @@ To verify that you deployed a connector successfully, you create a Greenplum Dat
 
 The Greenplum Database end user accesses an external data source by invoking a `CREATE EXTERNAL TABLE` command specifying the `pxf` protocol. (Refer to the [CREATE EXTERNAL TABLE](../../ref_guide/sql_commands/CREATE_EXTERNAL_TABLE.html) reference page for more about this Greenplum Database command.)
 
-The `LOCATION` clause of a `CREATE EXTERNAL TABLE` command specifying the `pxf` protocol is a URI that specifies the external data source and the location or path to or name of the data. The query portion of the `pxf` protocol URI, introduced by a question mark (?), must include a profile name or the fully-qualified plug-in class names of the connector. 
+The `LOCATION` clause of a `CREATE EXTERNAL TABLE` command specifying the `pxf` protocol is a URI that specifies the external data source and the location, path to, or name of the data. The query portion of the `pxf` protocol URI, introduced by a question mark (?), must include a profile name or the fully-qualified plug-in class names of the connector. 
 
 [Creating an External Table using PXF](../using_pxf.html#creatinganexternaltable) in the PXF end user documentation details how to create an external table when specifying a profile name. The syntax for a `CREATE EXTERNAL TABLE` command that specifies the Java plug-in class names in the `LOCATION` clause follows:
 
@@ -103,7 +103,7 @@ Perform the following procedure to deploy the *Demo* connector and to verify tha
 
 1. Log in to the Greenplum Database master node as an administrative user and set up your environment:
 
-    ```
+    ``` shell
     $ ssh gpadmin@<gpmaster>
     gpadmin@gpmaster$ . /usr/local/greenplum-db/greenplum_path.sh
     ```
@@ -141,7 +141,7 @@ Perform the following procedure to deploy the *Demo* connector and to verify tha
 
 9. Restart PXF on each segment host. For example:
 
-    ```
+    ``` shell
     gpadmin@gpmaster$ gpssh -e -v -f seghostfile "/usr/local/greenplum-db/pxf/bin/pxf restart"
     ```
     
@@ -149,13 +149,13 @@ Perform the following procedure to deploy the *Demo* connector and to verify tha
 
     1. Connect to a database in which you created the PXF extension as the `gpadmin` user. For example, to connect to a database named `pxf_exampledb`:
 
-        ```
+        ``` shell
         gpadmin@gpmaster$ psql -d pxf_exampledb -U gpadmin
         ```
         
     2. Create a readable Greenplum external table to exercise the *Demo* connector read operation. For example:
 
-        ```
+        ``` sql
         pxf_exampledb=# CREATE EXTERNAL TABLE demo_tbl_read (a TEXT, b TEXT, c TEXT)
             LOCATION ('pxf://default/tmp/dummy1?FRAGMENTER=org.greenplum.pxf.example.demo.DemoFragmenter&ACCESSOR=org.greenplum.pxf.example.demo.DemoAccessor&RESOLVER=org.greenplum.pxf.example.demo.DemoTextResolver')
             FORMAT 'TEXT' (DELIMITER ',');
@@ -166,7 +166,7 @@ Perform the following procedure to deploy the *Demo* connector and to verify tha
         
     3. Query the `demo_tbl_read` table:
 
-        ```
+        ``` sql
         pxf_exampledb=# SELECT * from demo_tbl_read;
                a        |   b    |   c    
         ----------------+--------+--------

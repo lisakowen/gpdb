@@ -4,14 +4,14 @@ title: Introducing the PXF API
 
 You use the PXF API to add support for a new external data store, data format, or data access API to Greenplum Database. You can also use the PXF API to extend existing external data stores, formats, and APIs. The PXF API defines the data structures, classes, and interfaces that you need to map external data into a tabular form suitable for Greenplum Database, and vice-versa.
 
-The PXF API interfaces that you implement or extend will depend upon the external data store/API, data types, and operations (read, write) that your connector or plug-in will support, as well as the specific features you want to provide. 
+The PXF API interfaces that you will implement or extend depend upon the external data store/API, data types, and operations (read, write) that your connector or plug-in will support, as well as the specific features you want to provide. 
 
 The PXF API defines classes including the following:
 
 | Class Name       | Description                                |
 |------------------|--------------------------------------------|
-| `Plugin`       | The base class for for all PXF plug-in types.    |
-| `Fragmenter`       | The abstract class that defines the splitting of a data from an external source into fragments.    |
+| `Plugin`       | The base class for all PXF plug-in types.    |
+| `Fragmenter`       | The abstract class that defines how to split data from an external source into fragments.    |
 | `Fragment`       | A subset of data that can be read in parallel.    |
 | `OneRow`       | One record or row in a `Fragment`.  |
 | `OneField`       | One deserialized or serialized field in a `OneRow` record.    |
@@ -50,7 +50,7 @@ pxf-api-3.3.0.0.jar
 $GPHOME/pxf/lib/pxf-api-<version>.jar
 ```
 
-If any plug-in that you implement will extend a class from a built-in PXF connector (HDFS, Hive, HBase), you will also need the JAR file associated with that connector. The built-in PXF connector JAR files also reside in `$GPHOME/pxf/lib`:
+If any plug-in that you implement extends a class from a built-in PXF connector (HDFS, Hive, HBase), you will also need the JAR file associated with that connector. The built-in PXF connector JAR files also reside in `$GPHOME/pxf/lib`:
 
 ``` shell
 pxf-hbase-<version>.jar
