@@ -19,6 +19,9 @@
             <topicref href="admin_utilities/gpfdist.xml"/>
             <topicref href="admin_utilities/gpinitstandby.xml"/>
             <topicref href="admin_utilities/gpinitsystem.xml"/>
+            <topicref href="admin_utilities/gpkafka-check.xml" otherprops="pivotal"/>
+            <topicref href="admin_utilities/gpkafka-load.xml" otherprops="pivotal"/>
+            <topicref href="admin_utilities/gpkafka-yaml.xml" otherprops="pivotal"/>
             <topicref href="admin_utilities/gpload.xml"/>
             <topicref href="admin_utilities/gplogfilter.xml"/>
             <topicref href="admin_utilities/gpmapreduce.xml"/>

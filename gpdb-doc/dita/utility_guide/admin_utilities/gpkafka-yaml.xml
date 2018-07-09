@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<topic id="topic1" otherprops="pivotal">
+    <title id="ke20941">gpkafka.yaml</title>
+    <body>
+      <note type="warning">The Greenplum Database <codeph>gpkafka</codeph> utility, including
+        its YAML configuration file, is an experimental feature and is not intended for use in a 
+        production environment. Experimental features are subject to change without notice
+        in future releases.</note>
+        <p>gpkafka configuration file.</p>
+        <section id="section2">
+            <title>Synopsis</title>
+            <codeblock>DATABASE: <varname>db_name</varname>
+USER: <varname>user_name</varname>
+HOST: <varname>host</varname>
+PORT: <varname>port</varname>
+KAFKA:
+   INPUT:
+      SOURCE:
+        Brokers: <varname>kafka_broker_host:port</varname> [, ... ]
+        topic: <varname>kafka_topic</varname>
+      COLUMNS:
+        - name: <varname>column_name</varname>
+          type: <varname>column_data_type</varname>
+        [ ... ]
+      FORMAT: <varname>data_format</varname>
+      ERROR_LIMIT: { <varname>num_errors</varname> | <varname>percentage_errors</varname> }
+   OUTPUT:
+      SCHEMA: <varname>schema_name</varname>
+      TABLE: <varname>table_name</varname>
+   COMMIT:
+      MAX_ROW: <varname>num_rows</varname>
+      MIN_INTERVAL: <varname>wait_time</varname></codeblock>
+        </section>
+        <section id="section4">
+            <title>Description</title>
+            <p>You specify load configuration parameters for the <codeph>gpkafka</codeph>
+              utilities in a YAML-formatted configuration file. (This reference page uses the
+              name <codeph>gpkafka.yaml</codeph> when referring to this file; you may choose
+              your own name for the file.) Load parameters include Greenplum Database connection
+              and target table information, Kafka broker and topic information, and error
+              and commit thresholds.</p>
+            <p>The <codeph>gpkafka</codeph> utility processes the YAML configuration file
+              in order, using indentation (spaces) to determine the document hierarchy
+              and the relationships between the sections. The use of white space
+              in the file is significant. </p>
+            <note>The <codeph>gpkafka.yaml</codeph> keywords are case-sensitive.</note>
+        </section>
+        <section id="section5">
+            <title>Keywords and Values</title>
+          <sectiondiv id="greenplum">
+                <b>Greenplum Database Connection Options</b>
+            <parml>
+                <plentry>
+                    <pt id="database">DATABASE: <varname>db_name</varname></pt>
+                    <pd>The name of the Greenplum database.</pd>
+                </plentry>
+                <plentry>
+                    <pt id="user">USER: <varname>user_name</varname></pt>
+                    <pd>The name of the Greenplum Database user/role.</pd>
+                </plentry>
+                <plentry>
+                    <pt id="host">HOST: <varname>host</varname></pt>
+                    <pd>The host name or IP address of the Greenplum Database master host.</pd>
+                </plentry>
+                <plentry>
+                    <pt id="port">PORT: <varname>port</varname></pt>
+                    <pd>The port number of the Greenplum Database server on the master host.</pd>
+                </plentry>
+              </parml>
+           </sectiondiv>
+           <sectiondiv id="kafka_input">
+                <b>KAFKA:INPUT: Options</b>
+              <parml>
+                <plentry>
+                    <pt id="source">SOURCE</pt>
+                    <pd>Kafka input configuration parameters.<parml>
+                    <plentry>
+                      <pt id="brokers">Brokers: <varname>kafka_broker_host:port</varname></pt>
+                      <pd>The host and port identifying the Kafka broker.</pd>
+                    </plentry>
+                    <plentry>
+                      <pt id="topic">topic: <varname>kafka_topic</varname></pt>
+                      <pd>The name of the Kafka topic from which to load data. The topic must exist.</pd>
+                    </plentry>
+                  </parml></pd>
+                </plentry>
+                <plentry>
+                    <pt id="columns">COLUMNS:</pt>
+                    <pd>The column names and data types.<note><codeph>gpkafka</codeph> ignores
+                      the <codeph>COLUMNS</codeph> block. The utility currently uses the structure
+                      of the target Greenplum Database <codeph>TABLE</codeph> when it loads the
+                      Kafka data.</note><parml>
+                    <plentry>
+                      <pt id="colname">name: <varname>column_name</varname></pt>
+                      <pd>The name of a column.</pd>
+                    </plentry>
+                    <plentry>
+                      <pt id="coltype">type: <varname>data_type</varname></pt>
+                      <pd>The data type of the column.</pd>
+                    </plentry>
+                  </parml></pd>
+                </plentry>
+                <plentry>
+                    <pt id="format">FORMAT: <varname>data_format</varname></pt>
+                    <pd>The format of the Kafka data. <note><codeph>gpkafka</codeph> supports only
+                      the <codeph>csv</codeph> <varname>data_format</varname>.</note></pd>
+                </plentry>
+                <plentry>
+                    <pt id="errorlimit">ERROR_LIMIT: { <varname>num_errors</varname> | <varname>percentage_errors</varname> }</pt>
+                    <pd>The error threshold, specified as either an absolute number or a
+                       percentage. <codeph>gpkafka load</codeph> exits when this limit is reached.</pd>
+                </plentry>
+              </parml>
+           </sectiondiv>
+           <sectiondiv id="kafka_output">
+                <b>KAFKA:OUTPUT: Options</b>
+              <parml>
+                <plentry>
+                    <pt>SCHEMA: <varname>schema_name</varname>:</pt>
+                    <pd>The name of the Greenplum Database schema. Optional.</pd>
+                </plentry>
+                <plentry>
+                    <pt>TABLE: <varname>table_name</varname>:</pt>
+                    <pd>The name of the Greenplum Database table into which to load the Kafka data.</pd>
+                </plentry>
+              </parml>
+           </sectiondiv>
+           <sectiondiv id="kafka_output">
+                <b>Greenplum Database COMMIT: Options</b>
+              <parml>
+                <plentry>
+                    <pt>COMMIT:</pt>
+                    <pd>Controls how <codeph>gpkafka load</codeph> commits data to Greenplum
+                      Database. You must specify one of <codeph>MAX_ROW:</codeph> or
+                      <codeph>MIN_INTERVAL:</codeph>. You may specify both.<parml>
+                    <plentry>
+                      <pt>MAX_ROW: <varname>number_of_rows</varname></pt>
+                      <pd>The number of rows to batch before triggering an <codeph>INSERT</codeph>
+                        operation on the Greenplum Database table. The minimum value of
+                        <codeph>MAX_ROW</codeph> is 10.</pd>
+                    </plentry>
+                    <plentry>
+                      <pt>MIN_INTERVAL: <varname>wait_time</varname></pt>
+                      <pd>The minimum amount of time to wait (milliseconds) between each
+                        <codeph>INSERT</codeph> operation on the table.</pd>
+                    </plentry>
+                  </parml></pd>
+                </plentry>
+             </parml>
+           </sectiondiv>
+        </section>
+        <section id="section8">
+            <title>Notes</title>
+            <p>If you created a database object name using a double-quoted identifier
+                (delimited identifier), you must specify the delimited name within single quotes in
+                the <codeph>gpkafka.yaml</codeph> configuration file. For example, if you create a table as
+                follows:</p>
+            <codeblock>CREATE TABLE "MyTable" ("MyColumn" text);</codeblock>
+            <p>Your <codeph>gpkafka.yaml</codeph> YAML configuration file would refer
+              to the above table and column names as:</p>
+            <codeblock>  COLUMNS:
+     - name: '"MyColumn"'
+       type: text
+OUTPUT:
+   TABLE: '"MyTable"'</codeblock>
+        </section>
+        <section id="section10">
+            <title>Examples</title>
+            <p>Load data from Kafka as defined in the configuration file named
+               <codeph>kafka2greenplum.yaml</codeph>:</p>
+            <codeblock>gpkafka load kafka2greenplum.yaml</codeblock>
+            <p>Example <codeph>kafka2greenplum.yaml</codeph> configuration file:</p>
+            <codeblock>DATABASE: ops
+USER: gpadmin
+HOST: mdw-1
+PORT: 5432
+KAFKA:
+   INPUT:
+      SOURCE:
+         Brokers: kbrokerhost1:9092
+         topic: customer_expenses
+      COLUMNS:
+         - name: cust_id
+           type: int
+         - name: month
+           type: int
+         - name: expenses
+           type: decimal(9,2)
+      FORMAT: csv
+      ERROR_LIMIT: 25
+   OUTPUT:
+      SCHEMA: payables
+      TABLE: expenses
+   COMMIT:
+      MAX_ROW: 1000
+      MIN_INTERVAL: 30000</codeblock>
+        </section>
+        <section id="section11">
+            <title>See Also</title>
+            <p><codeph><xref href="gpkafka-load.xml#topic1" type="topic" format="dita"/></codeph>,
+              <codeph><xref href="gpkafka-check.xml#topic1" type="topic" format="dita"/></codeph>.</p>
+        </section>
+    </body>
+</topic>

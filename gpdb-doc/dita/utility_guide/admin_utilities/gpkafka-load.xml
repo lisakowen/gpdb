@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<topic id="topic1" otherprops="pivotal">
+    <title id="ke20941">gpkafka load</title>
+    <body>
+       <note type="warning">The Greenplum Database <codeph>gpkafka</codeph> utility
+         is an experimental feature and is not intended for use in a production
+         environment. Experimental features are subject to change without notice
+         in future releases.</note>
+        <p>Load data from Kafka into Greenplum Database.</p>
+        <section id="section2">
+            <title>Synopsis</title>
+            <codeblock><b>gpkafka load</b> [<b>--quit-at-eof</b>] <varname>config.yaml</varname> 
+
+<b>gpkafka load</b> <b>--help</b></codeblock>
+        </section>
+        <section id="section4">
+            <title>Description</title>
+            <p>The <codeph>gpkafka load</codeph> utility loads data from a Kafka topic into
+               a Greenplum Database table. When you run the command, you provide a YAML-formatted
+               configuration file that defines load parameters such as the Greenplum Database
+               connection options, the Kafka broker and topic, and the target Greenplum Database
+               table.</p>
+            <p><codeph>gpkafka load</codeph> performs the load operation as a single
+              transaction to prevent data inconsistencies when performing multiple,
+              simultaneous load operations on a target table. </p>
+            <p>By default, <codeph>gpkafka load</codeph> loads all Kafka messages published 
+              to the topic, and then waits indefinitely for new messages to load. When you
+              provide the <codeph>--quit-at-eof</codeph> option to the command, the utility
+              exits after it reads all published messages.</p>
+            <p> In the case of user interrupt or exit, <codeph>gpkafka load</codeph> resumes
+              a load operation specifying the same Kafka topic and Greenplum Database table names
+              from the last recorded offset.</p>
+        </section>
+        <section id="section5">
+            <title>Options</title>
+            <parml>
+                <plentry>
+                    <pt><varname>config.yaml</varname></pt>
+                    <pd>The YAML-formatted configuration file that defines the load operation
+                      parameters. If the filename provided is not an absolute path, Greenplum
+                      Database assumes the file system location is relative to the current working
+                      directory. Refer to
+                      <codeph><xref href="gpkafka-yaml.xml#topic1" type="topic" format="dita"/></codeph>
+                      for the format and content of the parameters that you specify in this file.</pd>
+                </plentry>
+                <plentry>
+                    <pt>--quit-at-eof</pt>
+                    <pd>When you specify this option, <codeph>gpkafka load</codeph> exits after it
+                      reads all of the Kafka messages published to the topic. The default behaviour
+                       ov <codeph>gpkafka load</codeph> is to wait indefinitely for,
+                       and then consume, new Kafka messages published to the topic.</pd>
+                </plentry>
+                <plentry>
+                    <pt>--help</pt>
+                    <pd>Show command help, and then exit.</pd>
+                </plentry>
+            </parml>
+        </section>
+        <section id="section10">
+            <title>Examples</title>
+            <p>Stream Kafka data into Greenplum Database using the load parameters defined
+              in a configuration file named <codeph>loadcfg.yaml</codeph> located in the 
+              current directory:</p>
+              <codeblock>gpkafka load loadcfg.yaml</codeblock>
+            <p>Load Kafka data into Greenplum Database using a configuration file located in
+              the current directory named <codeph>loadcfg.yaml</codeph>; exit the load
+              operation after reading all Kafka messages published to the topic:</p>
+              <codeblock>gpkafka load --quit-at-eof loadcfg.yaml</codeblock>
+        </section>
+        <section id="section11">
+            <title>See Also</title>
+            <p><codeph><xref href="gpkafka-yaml.xml#topic1" type="topic" format="dita"/></codeph>,
+              <codeph><xref href="gpkafka-check.xml#topic1" type="topic" format="dita"/></codeph></p>
+        </section>
+    </body>
+</topic>

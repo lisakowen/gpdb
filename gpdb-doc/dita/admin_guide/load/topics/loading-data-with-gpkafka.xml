@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<topic id="topic62" otherprops="pivotal">
+    <title>Loading Kafka Data with gpkafka</title>
+    <body>
+        <note type="warning">The Greenplum Database <codeph>gpkafka</codeph> utility
+          is an experimental feature and is not intended for use in a production
+          environment. Experimental features are subject to change without notice
+          in future releases.</note>
+        <p>Pivotal Greenplum Database is a massively parallel processing database server 
+          specially designed to manage large scale analytic data warehouses and business
+          intelligence workloads. Apache Kafka is a fault-tolerant, low-latency, distributed 
+          publish-subscribe message system. The Pivotal <codeph>gpkafka</codeph> utility
+          provides high speed, parallel data transfer from Apache Kafka to Greenplum Database
+          to support a streaming ETL pipeline.</p>
+        <p>The <codeph>gpkafka</codeph> utility supports the Apache and Confluent Kafka
+          distributions. Refer to the <xref href="http://kafka.apache.org/documentation/" format="html" scope="external">Apache Kafka Documentation</xref>
+          for more information about Apache Kafka.</p>
+        <p>The <codeph>gpkafka</codeph> utility command has two subcommands:</p><ul>
+          <li><codeph>gpkafka load</codeph> - load Kafka data into Greenplum</li>
+          <li><codeph>gpkafka check</codeph> - check the commit history of a load operation</li>
+        </ul>
+        <p>This topic includes the following information:</p>
+        <ul>
+          <li><xref href="#overview" type="topic" format="dita"/></li>
+          <li><xref href="#prereq" type="topic" format="dita"/></li>
+          <li><xref href="#limits" type="topic" format="dita"/></li>
+          <li><xref href="#load" type="topic" format="dita"/><ul>
+            <li><xref href="#load/cfgfile" type="topic" format="dita"/></li>
+            <li><xref href="#load/createtbl" type="topic" format="dita"/></li>
+            <li><xref href="#load/assignperm" type="topic" format="dita"/></li>
+            <li><xref href="#load/runcmd" type="topic" format="dita"/></li>
+            <li><xref href="#load/check" type="topic" format="dita"/></li>
+          </ul></li>
+          <li><xref href="#example" type="topic" format="dita"/></li>
+        </ul>
+    </body>
+
+    <topic id="overview">
+      <title>Overview of the gpkafka Utility</title>
+      <body>
+        <p>Kafka stores streams of messages (or records) in categories called <varname>topics</varname>.
+          A Kafka <varname>producer</varname> publishes records to <varname>partitions</varname>
+          in one or more topics. A Kafka <varname>consumer</varname> subscribes to a topic
+          and is delivered records in the order that they
+          were sent within a given Kafka partition. Kafka does not guarantee order for data
+          originating from different Kafka partitions.</p>
+        <p>The <codeph>gpkafka</codeph> utility is a Kafka consumer. It ingests streaming
+          data from a single Kafka topic, using Greenplum Database readable external tables
+          to transform and insert the data into a target Greenplum table. You identify
+          the Kafka source, data format, and the Greenplum connection options and target
+          table definition in a configuration file that you provide to the utility.
+          In the case of user interrupt
+          or exit, <codeph>gpkafka</codeph> resumes a subsequent data load operation specifying
+          the same Kafka topic and target Greenplum Database table names from
+          the last recorded offset.</p>
+      </body>
+    </topic>
+
+    <topic id="prereq">
+      <title>Prerequisites</title>
+      <body>
+        <p>Before using the <codeph>gpkafka</codeph> utility to load Kafka data to Greenplum 
+          Database, ensure that you:</p><ul>
+          <li>Have access to a running Greenplum Database cluster, and that you can identify
+            the hostname of your master node.</li>
+          <li>Can identify the port on which your Greenplum Database master server process
+            is running, if it is not running on the default port (5432).</li>
+          <li>Have access to a running Kafka cluster with ZooKeeper, and that you can
+            identify the hostname(s) and port number(s) of the Kafka broker(s) serving the
+            data.</li>
+          <li>Can identify the Kafka topic of interest.</li>
+          <li>Run the command on a host with connectivity to:<ul>
+            <li>Each Kafka broker host in the Kafka cluster.</li>
+            <li>The Greenplum Database master and all segment hosts.</li>
+            </ul></li>
+          </ul>
+      </body>
+    </topic>
+
+    <topic id="limits">
+      <title>Limitations</title>
+      <body>
+        <p>The <codeph>gpkafka</codeph> utility currently supports:<ul>
+          <li>Comma-delimited-text format (CSV) data only.</li>
+          <li>Loading from a single Kafka topic to a single Greenplum Database table. You
+            must pre-create the Greenplum table.</li>
+          </ul></p>
+      </body>
+    </topic>
+
+    <topic id="load">
+      <title>Loading Kafka Data into Greenplum</title>
+      <body>
+        <p>You will perform the following tasks when you use the <codeph>gpkafka</codeph>
+           utility to load Kafka data into a Greenplum Database table:</p><ol>
+          <li>Ensure that you meet the <xref href="#prereq" type="topic" format="dita"/>.</li>
+          <li><xref href="#load/cfgfile" type="topic" format="dita">Construct the load configuration file</xref>.</li>
+          <li><xref href="#load/createtbl" type="topic" format="dita">Create the target Greenplum Database table</xref>.</li>
+          <li>Assign Greenplum Database role permissions, if required, as described in <xref href="#load/assignperm" type="topic" format="dita"/>.</li>
+          <li><xref href="#load/runcmd" type="topic" format="dita">Run the <codeph>gpkafka load</codeph> command</xref> to load the Kafka data into Greenplum Database.</li>
+          <li>Verify the load operation as described in <xref href="#load/check" type="topic" format="dita"/>.</li>
+        </ol>
+        <section id="cfgfile">
+          <title>Constructing the gpkafka.yaml Configuration File</title>
+          <p>You configure a data load operation from Kafka to Greenplum Database via
+            a YAML-formatted configuration file. This configuration file includes
+            parameters identifying the source Kafka data and information about the Greenplum
+            Database connection and target table, as well as error and commit thresholds for
+            the operation.</p>
+          <p>Contents of a sample <codeph>gpkafka</codeph> YAML configuration file named <codeph>loadcfg.yaml</codeph>:</p><codeblock>DATABASE: ops
+USER: gpadmin
+HOST: mdw-1
+PORT: 5432
+KAFKA:
+   INPUT:
+      SOURCE:
+         Brokers: kbrokerhost1:9092
+         topic: customer_expenses
+      COLUMNS:
+         - name: cust_id
+           type: int
+         - name: month
+           type: int
+         - name: expenses
+           type: decimal(9,2)
+      FORMAT: csv
+      ERROR_LIMIT: 25
+   OUTPUT:
+      SCHEMA: payables
+      TABLE: expenses
+   COMMIT:
+      MAX_ROW: 1000
+      MIN_INTERVAL: 30000</codeblock>
+          <p>You identify the Greenplum Database connection options via the 
+            <codeph>DATABASE</codeph>, <codeph>USER</codeph>, <codeph>HOST</codeph>,
+            and <codeph>PORT</codeph> parameters.</p>
+          <p>Specify the Kafka brokers and topic of interest using the
+            <codeph>KAFKA:INPUT:SOURCE</codeph> block. <i>You must create the Kafka topic
+            prior to loading data.</i></p>
+          <p>The <codeph>COLUMNS</codeph> block includes the name and type of each data
+            element in the Kafka message.</p>
+          <p>The <codeph>FORMAT</codeph> keyword identifies the format of the Kafka message.
+            <note><codeph>gpkafka</codeph> supports only comma-delimited (CSV) format data
+            at this time.</note></p>
+          <p>The <codeph>ERROR_LIMIT</codeph> parameter identifies the number of errors or
+            the error percentage threshold after which <codeph>gpkafka</codeph> should exit
+            the load operation.</p>
+          <p>You identify the target Greenplum Database schema name and table name via the
+            <codeph>KAFKA:OUTPUT:</codeph> <codeph>SCHEMA</codeph> and <codeph>TABLE</codeph>
+            parameters. <i>You must pre-create the Greenplum Database table before you
+            attempt to load Kafka data.</i></p>
+          <p><codeph>gpkafka</codeph> commits Kafka data to the Greenplum Database
+            table at the row and/or time intervals that you specify in the
+            <codeph>KAFKA:COMMIT:</codeph> <codeph>MAX_ROW</codeph> and/or
+            <codeph>MIN_INTERVAL</codeph> parameters. You must specify at least one of these
+            parameters.</p>
+          <p>Refer to the <xref href="../../../utility_guide/admin_utilities/gpkafka-yaml.xml#topic1" type="topic" format="dita">gpkafka.yaml</xref>
+            reference page for detailed information about the <codeph>gpkafka</codeph>
+            configuration file format and the configuration parameters that the file supports.</p>
+        </section>
+
+        <section id="createtbl">
+          <title>Creating the Greenplum Table</title>
+          <p>You must pre-create the Greenplum table before you load Kafka data into
+            Greenplum Database. You use the <codeph>KAFKA:OUTPUT:</codeph>
+            <codeph>SCHEMA</codeph> and <codeph>TABLE</codeph> load
+            configuration file parameters to identify the schema and table names.</p>
+          <p>The columns of the target Greenplum table must match the
+            <codeph>KAFKA:INPUT:COLUMNS</codeph> that you specify in the load configuration
+            file in both order and number.</p>
+          <p>The data types that you specify for the columns of the target Greenplum Database table must reflect the type of the related Kafka message element.</p>
+          <p>The <codeph>CREATE TABLE</codeph> command for the target Greenplum Database table receiving the Kafka topic data defined in the 
+             <codeph>loadcfg.yaml</codeph> file presented in the
+            <xref href="#load/cfgfile" type="topic" format="dita"/>
+            section follows:</p><codeblock> testdb=# CREATE TABLE payables.expenses( id int8, month int2, expenses decimal(9,2) );</codeblock>
+        </section>
+
+        <section id="assignperm">
+          <title>Configuring Greenplum Database Role Privileges</title>
+            <p>If you transfer data from Kafka to Greenplum Database using a non-admin Greenplum
+              user/role name, the Greenplum administrator must assign the role certain privileges:</p><ul>
+              <li>The role must have <codeph>USAGE</codeph> and <codeph>CREATE</codeph>
+                privileges on each non-public database schema in which the user will
+                write to tables:<codeblock>dbname=# GRANT USAGE, CREATE ON SCHEMA <varname>schema_name</varname> TO <varname>role_name</varname>;</codeblock></li>
+              <li>If the role writing to Greenplum Database is not a database or table
+                owner, the role must have <codeph>SELECT</codeph> and <codeph>INSERT</codeph>
+                privileges on each Greenplum Database table to which the user will
+                write Kafka data:<codeblock>dbname=# GRANT SELECT, INSERT ON <varname>schema_name</varname>.<varname>table_name</varname> TO <varname>role_name</varname>;</codeblock></li>
+              <li>The role must have permission to create readable external tables using
+                the Greenplum Database <codeph>gpfdist</codeph> protocol:
+                <codeblock>dbname=# ALTER ROLE <varname>role_name</varname> CREATEEXTTABLE(type = 'readable', protocol = 'gpfdist');</codeblock></li>
+              </ul>
+          <p>Refer to the Greenplum Database <xref href="../../roles_privs.xml#topic1" type="topic" format="dita">Managing Roles and Privileges</xref>
+            documentation for further information on assigning privileges to Greenplum Database users.</p>
+        </section>
+
+        <section id="runcmd">
+          <title>Running the <codeph>gpkafka load</codeph> Command</title>
+          <p>You run the <codeph>gpkafka load</codeph> command to load Kafka data to Greenplum.
+            When you run the command, you provide the name
+            of the configuration file that defines the parameters of the load operation.
+            For example:</p><codeblock>$ gpkafka load loadcfg.yaml</codeblock>
+          <p>The default mode of operation for <codeph>gpkafka load</codeph> is to read all
+            pending messages and then to wait for, and then consume, new Kafka messages.
+            When run in this mode, <codeph>gpkafka load</codeph> waits indefinitely; you can
+            interrupt and exit the command with Control-C.</p>
+          <p>To run the command in batch mode, you provide the
+            <codeph>--quit-at-eof</codeph> option. In this mode,
+            <codeph>gpkafka load</codeph> exits when there are no new messages
+            in the Kafka stream.</p>
+          <p><codeph>gpkafka load</codeph> resumes a subsequent data load operation specifying
+          the same Kafka topic and target Greenplum Database table names from
+          the last recorded offset.</p>
+          <p>Refer to the <xref href="../../../utility_guide/admin_utilities/gpkafka-load.xml#topic1" type="topic" format="dita">gpkafka load</xref>
+            reference page for additional information about this command.</p>
+        </section>
+
+        <section id="check">
+          <title>Checking the Progress of a Load Operation</title>
+          <p>You can check the commit history of a load operation with the
+            <codeph>gpkafka check</codeph> command. When you run
+            <codeph>gpkafka check</codeph>, you provide the name of the configuration file
+            that defined the load operation of interest. For example:</p><codeblock>$ gpkafka check loadcfg.yaml</codeblock>
+          <p>Sample command output:</p><codeblock>PartitionID    StartTime    EndTime    BeginOffset    EndOffset
+0    2018-07-13T16:19:11Z    2018-07-13T16:19:11Z    0    9</codeblock>
+          <p>When run without any options, This command displays the latest commit.
+            To view the complete commit history of a load operation, you run the command with
+            the <codeph>--show-commit-history all</codeph> arguments.</p>
+          <p>Refer to the <xref href="../../../utility_guide/admin_utilities/gpkafka-check.xml#topic1" type="topic" format="dita">gpkafka check</xref>
+            reference page for additional information about this command.</p>
+        </section>
+      </body>
+    </topic>
+
+    <topic id="example">
+      <title id="ke146419">Example</title>
+      <body>
+        <p>In this example, you load data from a Kafka topic named
+          <codeph>topic_for_gpkafka</codeph> into a Greenplum Database table named
+          <codeph>data_from_kafka</codeph>. You will perform the load as Greenplum role 
+          <codeph>gpadmin</codeph>. The table <codeph>data_from_kafka</codeph> resides
+          in the <codeph>public</codeph> schema in a Greenplum database named
+          <codeph>testdb</codeph>.</p>
+       <p>A producer of the Kafka <codeph>topic_for_gpkafka</codeph> topic emits customer
+         expense messages that include the customer identifier (integer), the month (integer),
+         and an expense amount (decimal).</p>
+       <p>You will run a Kafka console producer to emit customer expense messages, and use
+         the <codeph>gpkafka load</codeph> and <codeph>gpkafka check</codeph> commands to
+         load the data into the <codeph>data_from_kafka</codeph> table and verify the load 
+         operation.</p>
+        <section id="procedure">
+          <title>Procedure</title>
+       <p>Before you start this procedure, ensure that you have administrative access to running
+         Kafka and Greenplum Database clusters, and that these clusters have connectivity
+         as described in the <xref href="#prereq" type="topic" format="dita"/>. You can
+         also download and install the <xref href="https://kafka.apache.org/" format="html"
+            scope="external">Apache Kafka</xref> distribution and/or the Greenplum Database
+         sandbox from <xref href="https://network.pivotal.io/products/pivotal-gpdb" format="html"
+            scope="external">Pivotal Network</xref>.</p>
+       <ol>
+         <li>Identify and note the ZooKeeper hostname and port.</li>
+         <li>Identify and note the hostname and port of the Kafka broker(s).</li>
+         <li>Identify and note the hostname and port of the Greenplum Database master node.</li>
+         <li>Log in to a host in your Kafka cluster. For example:<codeblock>$ ssh kafkauser@kafkahost
+kafkahost$ </codeblock></li>
+         <li>Create a Kafka topic named <codeph>topic_for_gpkafka</codeph>. For example, if
+           you are running the Apache Kafka distribution on your local host:<codeblock>kafkahost$ $KAFKA_INSTALL_DIR/bin/kafka-topics.sh --create \
+    --zookeeper localhost:2181 --replication-factor 1 --partitions 1 \
+    --topic topic_for_gpkafka</codeblock></li>
+         <li>Open a file named <codeph>sample_data.csv</codeph> in the editor of your choice.
+           For example:<codeblock>kafkahost$ vi sample_data.csv</codeblock></li>
+         <li>Copy/paste the following text to add CSV-format data into the file, and then
+           save and exit:<codeblock>"1313131","12","1313.13"
+"3535353","11","761.35"
+"7979797","10","4489.00"
+"7979797","11","18.72"
+"3535353","10","6001.94"
+"7979797","12","173.18"
+"1313131","10","492.83"
+"3535353","12","81.12"
+"1313131","11","368.27"</codeblock></li>
+         <li>Stream the contents of the <codeph>sample_data.csv</codeph> file to a Kafka
+           console producer. For example, if you are running the Apache Kafka distribution:<codeblock>kafkahost$ $KAFKA_INSTALL_DIR/bin/kafka-console-producer.sh \
+    --broker-list localhost:9092 \
+    --topic topic_for_gpkafka &lt; sample_data.csv</codeblock></li>
+         <li>Verify that the Kafka console producer sent the messages by running a Kafka 
+          console consumer. For example, if you are running the Apache Kafka distribution:<codeblock>kafkahost$ $KAFKA_INSTALL_DIR/bin/kafka-console-consumer.sh \
+    --bootstrap-server localhost:9092 --topic topic_for_gpkafka \
+    --from-beginning</codeblock></li>
+         <li>Open a new terminal window, log in to the Greenplum Database master host as
+           the <codeph>gpadmin</codeph> administrative user, and set up the Greenplum
+           environment. For example:<codeblock>$ ssh gpadmin@gpmaster
+gpmaster$ . /usr/local/greenplum-db/greenplum_path.sh</codeblock></li>
+         <li>Construct the <codeph>gpkafka</codeph> load configuration file. Open a file
+           named <codeph>firstload_cfg.yaml</codeph> in the editor of your choice.
+           For example:<codeblock>gpmaster$ vi firstload_cfg.yaml</codeblock></li>
+         <li>Fill in the load configuration parameter values based on your environment.
+           For example, if:<ul>
+           <li>Your Greenplum Database master hostname is <codeph>gpmaster</codeph>.</li>
+           <li>The Greenplum Database server is running on the default port.</li>
+           <li>Your Kafka broker host and port is <codeph>localhost:9092</codeph>.</li>
+           <li>You want to write the Kafka data to a Greenplum Database table named
+             <codeph>data_from_kafka</codeph> located in the <codeph>public</codeph>
+             schema of a database named <codeph>testdb</codeph>.</li></ul>
+          <p>The <codeph>firstload_cfg.yaml</codeph> file would include the following contents:<codeblock>DATABASE: testdb
+USER: gpadmin
+HOST: gpmaster
+PORT: 5432
+KAFKA:
+   INPUT:
+     SOURCE:
+        Brokers: localhost:9092
+        topic: topic_for_gpkafka
+     COLUMNS:
+        - name: customer_id
+          type: int
+        - name: month
+          type: int
+        - name: expenses
+          type: decimal(9,2)
+     FORMAT: csv
+     ERROR_LIMIT: 125
+   OUTPUT:
+     TABLE: data_from_kafka
+   COMMIT:
+     MAX_ROW: 100
+</codeblock></p></li>
+         <li>Create the target Greenplum Database table named
+           <codeph>data_from_kafka</codeph>. For example:<codeblock>gpmaster$ psql -d testdb
+
+testdb=# CREATE TABLE data_from_kafka( id int8, month int2, expenses decimal(9,2) );</codeblock></li>
+         <li>Exit the <codeph>psql</codeph> subsystem:<codeblock>testdb=# \q</codeblock></li>
+         <li>Run the <codeph>gpkafka load</codeph> command to batch load the CSV data
+           published to the <codeph>topic_for_gpkafka</codeph> topic into the Greenplum
+           table. For example:<codeblock>gpmaster$ gpkafka load --quit-at-eof ./firstload_cfg.yaml</codeblock><p>The command exits after it reads all data published to the topic.</p></li>
+         <li>Examine the command output, looking for messages identifying the number of
+           rows inserted/rejected. For example:<codeblock>
+... -[INFO]:- ... Inserted 9 rows
+... -[INFO]:- ... Rejected 0 rows</codeblock></li>
+         <li>Run the <codeph>gpkafka load</codeph> command again, this time in streaming
+           mode. For example:<codeblock>gpmaster$ gpkafka load ./firstload_cfg.yaml</codeblock><p>The command waits for a producer to publish new messages to the topic.</p></li>
+         <li>Navigate back to your Kafka host terminal window. Stream the contents of the
+            <codeph>sample_data.csv</codeph> file to the Kafka console producer once more:<codeblock>kafkahost$ $KAFKA_INSTALL_DIR/bin/kafka-console-producer.sh \
+--broker-list localhost:9092 \
+--topic topic_for_gpkafka &lt; sample_data.csv</codeblock></li>
+         <li>Notice the activity in your Greenplum Database master terminal window.
+           <codeph>gpkafka load</codeph> consumes the new round of messages and waits.</li>
+         <li>Interrupt and exit the waiting <codeph>gpkafka load</codeph> command by entering
+           Control-c in the Greenplum Database master host terminal window.</li>
+         <li>Run the <codeph>gpkafka check</codeph> command to examine the complete commit
+           history of the load operation:<codeblock>gpmaster$ gpkafka check --show-commit-history all firstload_cfg.yaml
+PartitionID    StartTime    EndTime    BeginOffset    EndOffset
+0    2018-07-13T16:19:36Z    2018-07-13T16:19:36Z    9    18
+0    2018-07-13T16:19:11Z    2018-07-13T16:19:11Z    0    9</codeblock></li>
+         <li>Finally, view the contents of the Greenplum Database target table <codeph>data_from_kafka</codeph>:<codeblock>gpmaster$ psql -d testdb
+
+testdb=# SELECT * FROM data_from_kafka WHERE month='10' ORDER BY id;
+   id    | month | expenses 
+---------+-------+----------
+ 1313131 |    10 |   492.83
+ 1313131 |    10 |   492.83
+ 3535353 |    10 |  6001.94
+ 3535353 |    10 |  6001.94
+ 7979797 |    10 |  4489.00
+ 7979797 |    10 |  4489.00
+(6 rows)
+</codeblock><p>The table contains two entries for each customer because the producer published
+             the <codeph>sample_data.csv</codeph> file twice.</p></li>
+       </ol>
+      </section>
+      </body>
+    </topic>
+</topic>

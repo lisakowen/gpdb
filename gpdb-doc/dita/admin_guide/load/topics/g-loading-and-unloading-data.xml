@@ -29,6 +29,9 @@
           interfaces and access them in parallel. </li>
         <li>The <codeph>gpload</codeph> utility automates the steps of a load task using
             <codeph>gpfdist</codeph> and a YAML-formatted control file. </li>
+        <li otherprops="pivotal">The <codeph>gpkafka</codeph> utility provides the capability
+           to load Kafka data into a Greenplum Database table using a YAML-formatted configuration
+           file.</li>
         <li otherprops="pivotal">The GemFire-Greenplum Connector allows the transfer of data between
           a Pivotal GemFire region and a Greenplum Database table. Pivotal GemFire is an in-memory
           data management system that provides reliable asynchronous event notifications and

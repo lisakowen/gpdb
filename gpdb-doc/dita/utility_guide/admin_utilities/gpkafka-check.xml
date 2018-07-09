@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<topic id="topic1" otherprops="pivotal">
+    <title id="ke20941">gpkafka check</title>
+    <body>
+       <note type="warning">The Greenplum Database <codeph>gpkafka</codeph> utility
+         is an experimental feature and is not intended for use in a production
+         environment. Experimental features are subject to change without notice
+         in future releases.</note>
+        <p>Check the progress of a load operation from Kafka to Greenplum Database.</p>
+        <section id="section2">
+            <title>Synopsis</title>
+            <codeblock><b>gpkafka check</b> [--show-commit-history all | latest] <varname>config.yaml</varname> 
+
+<b>gpkafka check</b> <b>--help</b></codeblock>
+        </section>
+        <section id="section4">
+            <title>Description</title>
+            <p>The <codeph>gpkafka check</codeph> utility displays the commit history of the
+              Kafka to Greenplum Database load operation defined in <varname>config.yaml</varname>.</p>
+            <p>You can request the complete commit history or the history for the last
+              batch of data written to Greenplum Database. <codeph>gpkafka check</codeph>
+              displays the commit history of the latest data load operation by default.</p>
+        </section>
+        <section id="section5">
+            <title>Options</title>
+            <parml>
+                <plentry>
+                    <pt><varname>config.yaml</varname></pt>
+                    <pd>The YAML-formatted configuration file that defines the load operation 
+                      parameters. If the filename provided is not an absolute path, Greenplum
+                      Database assumes the file system location is relative to the current
+                      working directory.</pd>
+                </plentry>
+                <plentry>
+                    <pt>--show-commit-history [ all | latest ]</pt>
+                    <pd>Specify <codeph>all</codeph> to display the complete commit history
+                      of the data load operation defined in <varname>config.yaml</varname>.
+                      <codeph>latest</codeph>, the default, prints the commit history of the
+                      last batch of Kafka data written to Greenplum Database.</pd>
+                </plentry>
+                <plentry>
+                    <pt>--help</pt>
+                    <pd>Show command help, and then exit.</pd>
+                </plentry>
+            </parml>
+        </section>
+        <section id="section10">
+            <title>Examples</title>
+            <p>Display the complete commit history of the data load operation defined in
+              the <codeph>gpkafka load</codeph> configuration file named
+              <codeph>loadcfg.yaml</codeph>:</p><codeblock>gpkafka check --show-commit-history all loadcfg.yaml</codeblock>
+        </section>
+        <section id="section11">
+            <title>See Also</title>
+            <p><codeph><xref href="gpkafka-load.xml#topic1" type="topic" format="dita"/></codeph>,
+              <codeph><xref href="gpkafka-yaml.xml#topic1" type="topic" format="dita"/></codeph></p>
+        </section>
+    </body>
+</topic>
