@@ -41,6 +41,6 @@ Perform the following procedure to install Java on each segment host in your Gre
     2. Identify the Java base install directory. Update the `gpadmin` user's `.bash_profile` file on each segment host to include this `$JAVA_HOME` setting if it is not already present. For example:
 
         ``` shell
-        gpadmin@gpmaster$ gpssh -e -v -f seghostfile "echo 'export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.144-0.b01.el7_4.x86_64/jre' >> /home/gpadmin/.bash_profile"
+        gpadmin@gpmaster$ gpssh -e -v -f seghostfile "echo 'export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.x86_64/jre' >> /home/gpadmin/.bash_profile"
         ```
 

@@ -4,18 +4,22 @@ title: Configuring PXF Hadoop Connectors
 
 This topic describes how configure the PXF Hadoop, Hive, and HBase connectors. PXF is compatible with Cloudera, Hortonworks Data Platform, and generic Apache Hadoop distributions.
 
-*If you do not plan to use the Hadoop-related PXF connectors, you need not perform the procedure in this topic.*
+*If you do not plan to use the Hadoop-related PXF connectors, you need not perform this procedure.*
 
 ## <a id="client-pxf-prereq"></a>Prerequisites
 
-Before configuring PXF Hadoop, Hive, and HBase connectors, ensure that you have:
+Configuring PXF Hadoop connectors involves copying configuration files from your Hadoop cluster to each Greenplum Database segment host. Before you configure PXF Hadoop, Hive, and HBase connectors, ensure that you have:
 
 - `scp` access to hosts running the HDFS, Hive, and HBase services in your Hadoop cluster.
 
 
 ## <a id="client-pxf-config-steps"></a>Procedure
 
-Perform the following procedure to configure the desired PXF Hadoop-related connectors on each segment host in your Greenplum Database cluster. You will use the `gpssh` utility where possible to run a command on multiple hosts.
+Perform the following procedure to configure the desired PXF Hadoop-related connectors on each segment host in your Greenplum Database cluster.
+
+In most cases, you will copy the Hadoop configuration files to `$GPHOME/pxf/conf`. If Hadoop service clients are already installed on the Greenplum segment hosts **and** the Hadoop configuration is up-to-date, *you need not perform this procedure*. Otherwise, you will copy the Hadoop configuration files to `/etc/<hadoop-service>/conf` directories.
+
+You will use the `gpssh` and `gpscp` utilities where possible to run a command on multiple hosts.
 
 1. Log in to your Greenplum Database master node and set up the environment:
 
@@ -24,7 +28,7 @@ Perform the following procedure to configure the desired PXF Hadoop-related conn
     gpadmin@gpmaster$ . /usr/local/greenplum-db/greenplum_path.sh
     ```
 
-2. PXF requires information from `core-site.xml` and other Hadoop configuration files. Copy relevant HDFS, Hive, and HBase configuration from your Hadoop cluster to each Greenplum Database segment host. You will use the `gpscp` utility to copy files to multiple hosts.
+2. PXF requires information from `core-site.xml` and other Hadoop configuration files. Copy relevant configuration from your Hadoop cluster to each Greenplum Database segment host.
 
     1. Copy the `core-site.xml`, `hdfs-site.xml`, `mapred-site.xml`, and `yarn-site.xml` Hadoop configuration files from your Hadoop cluster NameNode host to the current host. For example:
 
@@ -35,16 +39,16 @@ Perform the following procedure to configure the desired PXF Hadoop-related conn
         gpadmin@gpmaster$ scp hdfsuser@namenode:/etc/hadoop/conf/yarn-site.xml .
         ```
         
-    2. Next, copy these Hadoop configuration files to the `/etc/hadoop/conf` directory on each Greenplum Database segment host. You may need to create this directory. For example:
+    2. Next, copy these Hadoop configuration files to each Greenplum Database segment host. *If a Hadoop client installation exists on the host*, copy the files to `/etc/hadoop/conf` instead. For example:
 
         ``` shell
-        gpadmin@gpmaster$ gpscp -v -f seghostfile core-site.xml =:/etc/hadoop/conf/core-site.xml
-        gpadmin@gpmaster$ gpscp -v -f seghostfile hdfs-site.xml =:/etc/hadoop/conf/hdfs-site.xml
-        gpadmin@gpmaster$ gpscp -v -f seghostfile mapred-site.xml =:/etc/hadoop/conf/mapred-site.xml
-        gpadmin@gpmaster$ gpscp -v -f seghostfile yarn-site.xml =:/etc/hadoop/conf/yarn-site.xml
+        gpadmin@gpmaster$ gpscp -v -f seghostfile core-site.xml =:/usr/local/greenplum-db/pxf/conf/core-site.xml
+        gpadmin@gpmaster$ gpscp -v -f seghostfile hdfs-site.xml =:/usr/local/greenplum-db/pxf/conf/hdfs-site.xml
+        gpadmin@gpmaster$ gpscp -v -f seghostfile mapred-site.xml =:/usr/local/greenplum-db/pxf/conf/mapred-site.xml
+        gpadmin@gpmaster$ gpscp -v -f seghostfile yarn-site.xml =:/usr/local/greenplum-db/pxf/conf/yarn-site.xml
         ```
 
-2. If you plan to use the PXF Hive connector to access Hive table data, copy Hive configuration to each Greenplum Database segment host.
+2. If you plan to use the PXF Hive connector to access Hive table data, similarly copy Hive configuration to each Greenplum Database segment host.
     
     1. Copy the `hive-site.xml` Hive configuration file from one of the hosts on which your Hive service is running to the current host. For example:
 
@@ -52,24 +56,25 @@ Perform the following procedure to configure the desired PXF Hadoop-related conn
         gpadmin@gpmaster$ scp hiveuser@hivehost:/etc/hive/conf/hive-site.xml .
         ```
 
-    2. Next, copy the `hive-site.xml` configuration file to the `/etc/hive/conf` directory on each Greenplum Database segment host. You may need to create this directory. For example:
+    2. Next, copy the `hive-site.xml` configuration file to each Greenplum Database segment host. *If a Hive client installation exists on the host*, copy the file to `/etc/hive/conf` instead. For example:
 
         ``` shell
-        gpadmin@gpmaster$ gpscp -v -f seghostfile hive-site.xml =:/etc/hive/conf/hive-site.xml
+        gpadmin@gpmaster$ gpscp -v -f seghostfile hive-site.xml =:/usr/local/greenplum-db/pxf/conf/hive-site.xml
+        ```
 
-3. If you plan to use the PXF HBase connector to access HBase table data, copy HBase configuration to each Greenplum Database segment host.
+3. If you plan to use the PXF HBase connector to access HBase table data, similarly copy HBase configuration to each Greenplum Database segment host.
     
     1. Copy the `hbase-site.xml` HBase configuration file from one of the hosts on which your HBase service is running to the current host. For example:
 
         ``` shell
-        gpadmin@gpmaster$ scp hbaseuser@hbasehost:/etc/hive/conf/hbase-site.xml .
+        gpadmin@gpmaster$ scp hbaseuser@hbasehost:/etc/hbase/conf/hbase-site.xml .
         ```
 
-    2. Next, copy the `hbase-site.xml` configuration file to the `/etc/hbase/conf` directory on each Greenplum Database segment host. You may need to create this directory. For example:
+    2. Next, copy the `hbase-site.xml` configuration file to each Greenplum Database segment host. *If an HBase client installation exists on the host*, copy the file to `/etc/hbase/conf` instead. For example:
 
         ``` shell
-        gpadmin@gpmaster$ gpscp -v -f seghostfile hive-site.xml =:/etc/hbase/conf/hbase-site.xml
-
+        gpadmin@gpmaster$ gpscp -v -f seghostfile hbase-site.xml =:/usr/local/greenplum-db/pxf/conf/hbase-site.xml
+        ```
 
 4. PXF accesses Hadoop services on behalf of Greenplum Database end users. By default, PXF tries to access HDFS, Hive, and HBase using the identity of the Greenplum Database user account that logs into Greenplum Database. In order to support this functionality, you must configure proxy settings for Hadoop, as well as for Hive and HBase if you intend to use those PXF connectors. Follow procedures in [Configuring User Impersonation and Proxying](pxfuserimpers.html) to configure user impersonation and proxying for Hadoop services, or to turn off PXF user impersonation.
 
