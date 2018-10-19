@@ -6,13 +6,16 @@ If you are using PXF in your current Greenplum Database installation, you must u
 
 The PXF upgrade procedure describes how to upgrade PXF in your Greenplum Database installation. This procedure uses *PXF.from* to refer to your currently-installed PXF version and *PXF.to* to refer to the PXF version installed when you upgrade to the new version of Greenplum Database.
 
-**Note**: Starting in Greenplum Database version 5.12.0, PXF no longer requires a Hadoop client installation. PXF now bundles all of the JAR files on which it depends, and loads these JARs at runtime.
+Most PXF installations do not require modifications to PXF configuration files and should experience a seamless upgrade.
+
+**Note**: Starting in Greenplum Database version 5.12.0, PXF no longer requires a Hadoop client installation. PXF now bundles all of the JAR files on which it depends, and loads these JARs at runtime. PXF still requires that the Hadoop configuration files reside in `/etc/<hadoop-service>/conf`.
 
 The PXF upgrade procedure has two parts. You perform one procedure before, and one procedure after, you upgrade to a new version of Greenplum Database:
 
 -   [Step 1: PXF Pre-Upgrade Actions](#pxfpre)
 -   Upgrade to a new Greenplum Database version
 -   [Step 2: Upgrading PXF](#pxfup)
+
 
 ## <a id="pxfpre"></a>Step 1: PXF Pre-Upgrade Actions
 
