@@ -14,8 +14,8 @@
         instructions.</p>
      <ul>
        <li><codeph><xref href="citext.xml" scope="peer" format="dita"
-              >citext</xref></codeph> - Provides a case-insensitive, multibyte-aware text data
-          type.</li>
+              >citext</xref></codeph> - Provides a case-insensitive, multibyte-aware text
+          data type.</li>
        <li><codeph><xref href="dblink.xml" scope="peer" format="dita"
               >dblink</xref></codeph> - Provides connections to other Greenplum and PostgreSQL
          databases.</li>
