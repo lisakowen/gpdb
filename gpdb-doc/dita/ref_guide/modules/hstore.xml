@@ -28,7 +28,7 @@
       <p>See <xref href="https://www.postgresql.org/docs/9.4/hstore.html"
         format="html" scope="external">hstore</xref> in the PostgreSQL
         documentation for detailed information about the data types and
-        functions in defined in this module.</p>
+        functions defined in this module.</p>
     </body>
   </topic>
 </topic>

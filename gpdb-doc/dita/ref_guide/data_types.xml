@@ -9,7 +9,7 @@
         all of the built-in data types. In addition to the types listed here, there are also some
         internally used data types, such as <i>oid</i> (object identifier), but those are not
         documented in this guide. </p>
-      <p>Additional supplied modules that you register may also install new data
+      <p>Additional modules that you register may also install new data
         types. The <codeph>hstore</codeph> module, for example, introduces a new data type and
         associated functions for working with key-value pairs. See <xref
           href="modules/hstore.xml"/>. The <codeph>citext</codeph> module
