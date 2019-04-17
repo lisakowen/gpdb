@@ -7,7 +7,7 @@
     <p id="sql_command_desc">Retrieves rows from a table or view.</p>
     <section id="section2">
       <title>Synopsis</title>
-      <codeblock id="sql_command_synopsis">[ WITH [ RECURSIVE<sup>1</sup> ] <varname>with_query</varname> [, ...] ]
+      <codeblock id="sql_command_synopsis">[ WITH [ RECURSIVE ] <varname>with_query</varname> [, ...] ]
 SELECT [ALL | DISTINCT [ON (<varname>expression</varname> [, ...])]]
   * | <varname>expression </varname>[[AS] <varname>output_name</varname>] [, ...]
   [FROM <varname>from_item</varname> [, ...]]
@@ -59,8 +59,6 @@ ROWS FROM( function_name ( [ argument [, ...] ] ) [ AS ( column_definition [, ..
   <varname>value</varname> FOLLOWING
   UNBOUNDED FOLLOWING
 </codeblock></p>
-      <p><b>Note:</b>
-        <sup>1</sup>The <codeph>RECURSIVE</codeph> keyword is A Beta feature.</p>
     </section>
     <section id="section3">
       <title>Description</title>
@@ -141,11 +139,8 @@ ROWS FROM( function_name ( [ argument [, ...] ] ) [ AS ( column_definition [, ..
           each query in the <codeph>WITH</codeph> clause. Optionally, a list of column names can be
           specified; if the list of column names is omitted, the names are inferred from the
           subquery. The primary query and the <codeph>WITH</codeph> queries are all (notionally)
-          executed at the same time. </p><p>The <codeph>RECURSIVE</codeph> keyword can be enabled by setting the server configuration
-          parameter <codeph>gp_recursive_cte</codeph> to <codeph>true</codeph>. For
-          information about the parameter, see <xref href="../config_params/guc_config.xml#topic1"
-            />.<note type="note">The <codeph>RECURSIVE</codeph> keyword is a Beta
-          feature.</note></p><p>If <codeph>RECURSIVE</codeph> is specified, it
+          executed at the same time. </p><p>The <codeph>RECURSIVE</codeph> keyword is enabled
+          by default. If <codeph>RECURSIVE</codeph> is specified, it
           allows a <codeph>SELECT</codeph> subquery to reference itself by name. Such a subquery has
           the general
           form</p><codeblock><varname>non_recursive_term</varname> UNION [ALL | DISTINCT] <varname>recursive_term</varname></codeblock><p>where
