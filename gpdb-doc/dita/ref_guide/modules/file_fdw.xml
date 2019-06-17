@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_lv4_czp_fz">
+  <title>file_fdw</title>
+  <body>
+    <p>The <codeph>file_fdw</codeph> module provides a foreign data wrapper that you
+      can use to read files in a PostgreSQL or Greenplum Database server's filesystem
+      into a foreign table. The data files must be in a format that
+      <xref href="../sql_commands/COPY.xml" format="dita" scope="peer"><codeph>COPY ... FROM</codeph></xref>
+      can read.</p>
+    <note>The <codeph>file_fdw</codeph> module supports reading files. The module
+      does not support writing to files on the server's filesystem.</note>
+    <p>The Greenplum Database <codeph>file_fdw</codeph> module is a modified version
+      of the PostgreSQL <codeph>file_fdw</codeph> module. When you access files on
+      a Greenplum Database server system using this module, the module reads files
+      only on the master host unless you provide the Greenplum-specific
+      <codeph>mpp_execute</codeph> option when you create the foreign server or
+      foreign table.</p>
+  </body>
+  <topic id="topic_reg">
+    <title>Installing and Registering the Module</title>
+    <body>
+      <p>The <codeph>file_fdw</codeph> module is installed when you install Greenplum
+        Database. Before you can create a foreign server using this foreign data
+        wrapper, you must register the <codeph>file_fdw</codeph> extension in
+        each database in which you want to use the foreign data wrapper.
+        <ph otherprops="pivotal">Refer to <xref href="../../install_guide/install_modules.xml"
+          format="dita" scope="peer">Installing Additional Supplied Modules</xref>
+        for more information.</ph></p>
+    </body>
+  </topic>
+  <topic id="topic_using">
+    <title>Using file_fdw to Read Files on a Greenplum Server Filesystem</title>
+    <body>
+      <p>By default, when you use the <codeph>file_fdw</codeph> foreign data wrapper
+        module to access files on a Greenplum Database server system, you read the
+        file on the master host. To read the file on all Greenplum Database segment
+        hosts, you can specify <codeph>mpp_execute 'all' </codeph> in the
+        <codeph>OPTIONS</codeph> clause when you create the foreign server or
+        foreign table (assuming that you have the privileges required to create
+        these objects).</p>
+        <codeblock>CREATE SERVER gp_fserver FOREIGN DATA WRAPPER file_fdw OPTIONS (mpp_execute 'all');
+CREATE FOREIGN TABLE file_csv_all (
+    word1 text, word2 text
+) SERVER gp_fserver
+OPTIONS (format 'csv', filename '/data/csvtextfile&lt;SEGID>.csv', mpp_execute 'all');
+</codeblock>
+      <p>The Greenplum Database <codeph>file_fdw</codeph> module does not support
+        setting <codeph>mpp_execute 'any'</codeph>.
+    <note>While Greenplum Database will allow you to create a foreign server or
+      foreign table that specifies <codeph>mpp_execute 'any'</codeph>, it will
+      return an error when you <codeph>SELECT</codeph> the foreign table.</note></p>
+    </body>
+  </topic>
+  <topic id="topic_info">
+    <title>Module Documentation</title>
+    <body>
+      <p>Refer to <xref href="https://www.postgresql.org/docs/9.4/file-fdw.html" format="html"
+        scope="external">file_fdw</xref> in the PostgreSQL documentation for detailed
+        information about the options and usage of this foreign data wrapper module.</p>
+    </body>
+  </topic>
+</topic>

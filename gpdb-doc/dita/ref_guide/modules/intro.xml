@@ -18,6 +18,9 @@
           data type.</li>
        <li><codeph><xref href="dblink.xml" format="dita"
               >dblink</xref></codeph> - Provides connections to other Greenplum databases.</li>
+       <li><codeph><xref href="file_fdw.xml"
+             format="dita">file_fdw</xref></codeph> - Provides a foreign data wrapper that
+           you can use to access files in the Greenplum Database server's file system.</li>
        <li><codeph><xref href="fuzzystrmatch.xml"
              format="dita">fuzzystrmatch</xref></codeph> - Determines similarities and differences
          between strings.</li>
