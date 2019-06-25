@@ -39,17 +39,27 @@
         <codeph>OPTIONS</codeph> clause when you create the foreign server or
         foreign table (assuming that you have the privileges required to create
         these objects).</p>
-        <codeblock>CREATE SERVER gp_fserver FOREIGN DATA WRAPPER file_fdw OPTIONS (mpp_execute 'all segments');
-CREATE FOREIGN TABLE file_csv_all (
+        <codeblock>CREATE SERVER gp_fserver FOREIGN DATA WRAPPER file_fdw OPTIONS (mpp_execute 'all segments');</codeblock>
+
+      <p>When you create the foreign table, you must provide a <codeph>filename</codeph>
+        in the <codeph>OPTIONS</codeph> clause. When you are accessing the file on
+        the master host, provide an absolute path to the file in the
+        <codeph>CREATE FOREIGN TABLE</codeph> command. When you are
+        accessing the file on all segments, the <codeph>filename</codeph> that you
+        provide in the <codeph>CREATE FOREIGN TABLE</codeph> command must include a
+        <codeph>&lt;SEGID></codeph> qualifier. For example:
+        <codeblock>CREATE FOREIGN TABLE file_csv_all (
     word1 text, word2 text
 ) SERVER gp_fserver
-OPTIONS (format 'csv', filename '/data/csvtextfile&lt;SEGID>.csv', mpp_execute 'all segments');
-</codeblock>
-      <p>The Greenplum Database <codeph>file_fdw</codeph> module does not support
-        setting <codeph>mpp_execute 'any'</codeph>.
-    <note>While Greenplum Database will allow you to create a foreign server or
-      foreign table that specifies <codeph>mpp_execute 'any'</codeph>, it will
-      return an error when you <codeph>SELECT</codeph> the foreign table.</note></p>
+OPTIONS (format 'csv', filename '/data/csvtextfile&lt;SEGID>.csv', mpp_execute 'all segments');</codeblock></p>
+      <p>And the file on the server system must include the segment identifier as
+        well. For example:
+        <codeblock>/data/csvtextfile0.csv</codeblock></p>
+      <note>The Greenplum Database <codeph>file_fdw</codeph> module does not support
+        the <codeph>mpp_execute 'any'</codeph> setting. While Greenplum Database will
+        allow you to create a foreign server or foreign table that specifies
+        <codeph>mpp_execute 'any'</codeph>, it will return an error when you
+        <codeph>SELECT</codeph> the foreign table.</note>
     </body>
   </topic>
   <topic id="topic_info">
