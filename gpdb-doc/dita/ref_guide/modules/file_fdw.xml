@@ -35,15 +35,15 @@
       <p>By default, when you use the <codeph>file_fdw</codeph> foreign data wrapper
         module to access files on a Greenplum Database server system, you read the
         file on the master host. To read the file on all Greenplum Database segment
-        hosts, you can specify <codeph>mpp_execute 'all' </codeph> in the
+        hosts, you can specify <codeph>mpp_execute 'all segments' </codeph> in the
         <codeph>OPTIONS</codeph> clause when you create the foreign server or
         foreign table (assuming that you have the privileges required to create
         these objects).</p>
-        <codeblock>CREATE SERVER gp_fserver FOREIGN DATA WRAPPER file_fdw OPTIONS (mpp_execute 'all');
+        <codeblock>CREATE SERVER gp_fserver FOREIGN DATA WRAPPER file_fdw OPTIONS (mpp_execute 'all segments');
 CREATE FOREIGN TABLE file_csv_all (
     word1 text, word2 text
 ) SERVER gp_fserver
-OPTIONS (format 'csv', filename '/data/csvtextfile&lt;SEGID>.csv', mpp_execute 'all');
+OPTIONS (format 'csv', filename '/data/csvtextfile&lt;SEGID>.csv', mpp_execute 'all segments');
 </codeblock>
       <p>The Greenplum Database <codeph>file_fdw</codeph> module does not support
         setting <codeph>mpp_execute 'any'</codeph>.
