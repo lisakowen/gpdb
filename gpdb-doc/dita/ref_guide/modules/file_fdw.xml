@@ -56,10 +56,10 @@ OPTIONS (format 'csv', filename '/data/csvtextfile&lt;SEGID>.csv', mpp_execute '
         well. For example:
         <codeblock>/data/csvtextfile0.csv</codeblock></p>
       <note>The Greenplum Database <codeph>file_fdw</codeph> module does not support
-        the <codeph>mpp_execute 'any'</codeph> setting. While Greenplum Database will
-        allow you to create a foreign server or foreign table that specifies
-        <codeph>mpp_execute 'any'</codeph>, it will return an error when you
-        <codeph>SELECT</codeph> the foreign table.</note>
+        the <codeph>mpp_execute 'any'</codeph> setting. Although Greenplum Database
+        allows you to create a foreign server or foreign table that specifies
+        <codeph>mpp_execute 'any'</codeph>, it returns an error when you
+        query the foreign table.</note>
     </body>
   </topic>
   <topic id="topic_info">
