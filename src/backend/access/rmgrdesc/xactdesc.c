@@ -37,7 +37,11 @@ xact_desc_commit(StringInfo buf, xl_xact_commit *xlrec)
 		appendStringInfoString(buf, "; rels:");
 		for (i = 0; i < xlrec->nrels; i++)
 		{
-			char	   *path = relpathperm(xlrec->xnodes[i].node, MAIN_FORKNUM);
+			BackendId  backendId = xlrec-> xnodes[i].isTempRelation ?
+								  TempRelBackendId : InvalidBackendId;
+			char	   *path = relpathbackend(xlrec->xnodes[i].node,
+											  backendId,
+											  MAIN_FORKNUM);
 
 			appendStringInfo(buf, " %s", path);
 			pfree(path);
@@ -78,7 +82,8 @@ xact_desc_commit(StringInfo buf, xl_xact_commit *xlrec)
 				appendStringInfo(buf, " unknown id %d", msg->id);
 		}
 	}
-
+	if (xlrec->distribTimeStamp != 0 || xlrec->distribXid != InvalidDistributedTransactionId)
+		appendStringInfo(buf, " gid = %u-%.10u", xlrec->distribTimeStamp, xlrec->distribXid);
 	/*
 -	 * MPP: Return end of regular commit information.
 	 */
@@ -134,7 +139,11 @@ xact_desc_abort(StringInfo buf, xl_xact_abort *xlrec)
 		appendStringInfoString(buf, "; rels:");
 		for (i = 0; i < xlrec->nrels; i++)
 		{
-			char	   *path = relpathperm(xlrec->xnodes[i].node, MAIN_FORKNUM);
+			BackendId  backendId = xlrec-> xnodes[i].isTempRelation ?
+								  TempRelBackendId : InvalidBackendId;
+			char	   *path = relpathbackend(xlrec->xnodes[i].node,
+											  backendId,
+											  MAIN_FORKNUM);
 
 			appendStringInfo(buf, " %s", path);
 			pfree(path);
@@ -235,6 +244,13 @@ xact_desc(StringInfo buf, XLogRecord *record)
 
 		appendStringInfo(buf, "distributed forget ");
 		xact_desc_distributed_forget(buf, xlrec);
+	}
+	else if (info == XLOG_XACT_ONE_PHASE_COMMIT)
+	{
+		xl_xact_commit *xlrec = (xl_xact_commit *) rec;
+
+		appendStringInfoString(buf, "one-phase commit: ");
+		xact_desc_commit(buf, xlrec);
 	}
 	else
 		appendStringInfoString(buf, "UNKNOWN");

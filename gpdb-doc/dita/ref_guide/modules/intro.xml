@@ -13,11 +13,15 @@
         modules are installed; refer to the linked module documentation for usage
         instructions.</p>
      <ul>
+      <li><codeph><xref href="auto-explain.xml#topic_fstrm"/></codeph> Provides a means for logging
+        execution plans of slow statements automatically.</li>
        <li><codeph><xref href="citext.xml" format="dita"
               >citext</xref></codeph> - Provides a case-insensitive, multibyte-aware text
           data type.</li>
        <li><codeph><xref href="dblink.xml" format="dita"
               >dblink</xref></codeph> - Provides connections to other Greenplum databases.</li>
+       <li><codeph><xref href="diskquota.xml#topic_gzw_2wz_13b"/></codeph> - Allows administrators to
+         set disk usage quotas for Greenplum Database roles and schemas.</li>
        <li><codeph><xref href="file_fdw.xml"
              format="dita">file_fdw</xref></codeph> - Provides a foreign data wrapper that
            you can use to access files in the Greenplum Database server's file system.</li>
