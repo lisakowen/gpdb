@@ -18,7 +18,7 @@
   <topic xml:lang="en" id="about">
     <title>About Greenplum Python</title>
     <body>
-      <p>The Greenplum Python 3 Client (GreenplumPython) is an interactive
+      <p>The Greenplum Python 3 Client (GreenplumPython) is an interactive 
         in-database data analytics tool for Greenplum Database. The client
         uses <xref href="https://docs.sqlalchemy.org/en/13/index.html"
           scope="external" format="html">SQLAlchemy</xref> to provide a Python 3
