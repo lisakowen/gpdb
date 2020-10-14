@@ -70,7 +70,7 @@ After you upgrade to the new version of Greenplum Database, perform the followin
 2. Starting in Greenplum Database version 6.12, PXF is removed from the Greenplum server distribution. You must download and install the separate PXF `rpm` or `deb` package as described in [Installing PXF](../../pxf/latest/release/installing_pxf.html).
 
 
-2. Initialize PXF on each segment host as described in [Initializing PXF](../../pxf/latest/init_pxf.html). You may choose to use your existing `$PXF_CONF` for the initialization.
+2. Initialize PXF on each segment host as described in [Initializing PXF](../../pxf/latest/init_pxf.html). You can use the existing `$PXF_CONF` for the initialization.
 
 3. **If you are upgrading from Greenplum Database version 6.1.x or earlier** and you have configured any JDBC servers that access Kerberos-secured Hive, you must now set the `hadoop.security.authentication` property to the `jdbc-site.xml` file to explicitly identify use of the Kerberos authentication method. Perform the following for each of these server configs:
 
