@@ -146,7 +146,7 @@ gpadmin@gpmaster$ gpconfig -c advanced_password_check.restrict_number -v false
 gpadmin@gpmaster$ gpstop -u</codeblock> 
       <p>After loading the new configuration, passwords that the Greenplum
         superuser sets must now follow the policies, and Greenplum returns an
-        error if any of the policies are not met. Note that Greenplum checks the
+        error for every policy that is not met. Note that Greenplum checks the
         password string against all of the policies, and concatenates together
         the messages for any errors that it encounters.
         For example (line breaks added for better viewability):</p>
