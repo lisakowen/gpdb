@@ -4,7 +4,7 @@
   <topic id="topic_fstrm">
     <title>advanced_password_check</title>
     <body>
-      <p>The <codeph>advanced_passwd_check</codeph> module provides password
+      <p>The <codeph>advanced_password_check</codeph> module provides password
         quality checking for Greenplum Database.</p>
       <p>The Greenplum Database <codeph>advanced_password_check</codeph> module
         is based on the <codeph>passwordcheck_extra</codeph> module, which
@@ -30,18 +30,18 @@
     <topic id="topic_using">
       <title>Using the advanced_password_check Module</title>
       <body>
-        <p><codeph>advanced_passwd_check</codeph> is a Greenplum Database module
+        <p><codeph>advanced_password_check</codeph> is a Greenplum Database module
           that you can enable and configure to check password strings against
           one or more user-defined policies. You can configure policies that:
           <ul>
             <li>Set a minimum password string length.</li>
-            <li>Set a maximum password string lentth.</li>
-            <li>Define a custom ilst of special characters.</li>
+            <li>Set a maximum password string length.</li>
+            <li>Define a custom list of special characters.</li>
             <li>Define rules for special character, upper/lower case character,
               and number inclusion in the password string.</li>
           </ul>
         </p>
-        <p>The <codeph>advanced_passwd_check</codeph> module defines server
+        <p>The <codeph>advanced_password_check</codeph> module defines server
           configuration parameters that you set to configure password setting
           policies. These parameters include:</p>
         <table>
