@@ -6814,7 +6814,7 @@
         model that GPORCA chooses for bitmap scans used with bitmap indexes or
         with btree indexes on AO tables.</p>
       <ul>
-        <li><codeph>legacy</codeph> - preserves the cost model used by GPORCA
+        <li><codeph>legacy</codeph> - preserves the calibrated cost model used by GPORCA
           in Greenplum Database releases 6.13 and earlier</li>
         <li><codeph>calibrated</codeph> - improves cost estimates for indexes</li>
         <li><codeph>experimental</codeph> - reserved for future experimental cost models;
